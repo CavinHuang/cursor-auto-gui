@@ -4,6 +4,7 @@ from .widgets.basic_tab import AccountFrame, CursorFrame, ButtonFrame
 from .widgets.setting_tab import SettingFrame
 from .widgets.log_tab.log_frame import LogFrame
 from src.utils.file_watcher import FileWatcher
+from src.logic.log.log_manager import LogManager
 
 class MainWindow:
     def __init__(self):
@@ -11,6 +12,9 @@ class MainWindow:
         ctk.set_default_color_theme("blue")  # 设置颜色主题
 
         self.window = ctk.CTk()
+
+        # 初始化日志管理器
+        self.log_manager = LogManager()
 
         # 初始化文件监听器
         self.file_watcher = FileWatcher("src", self.on_file_changed)
@@ -44,9 +48,8 @@ class MainWindow:
         self.log_frame = LogFrame(self.tabview.tab("日志"))
         self.log_frame.pack(fill="both", padx=10, pady=5)
 
-        # 日志页面
-        self.log_frame = LogFrame(self.tabview.tab("日志"))
-        self.log_frame.pack(fill="both", padx=10, pady=5)
+        # 设置日志管理器的GUI日志输出对象
+        self.log_manager.set_gui_logger(self.log_frame)
 
     def create(self):
         # 启动文件监听
@@ -91,10 +94,6 @@ class MainWindow:
         # 设置页面
         self.setting_frame = SettingFrame(self.tabview.tab("设置"))
         self.setting_frame.pack(fill="both", padx=10, pady=5)
-
-        # 日志页面
-        self.log_frame = LogFrame(self.tabview.tab("日志"))
-        self.log_frame.pack(fill="both", padx=10, pady=5)
 
         # 日志页面
         self.log_frame = LogFrame(self.tabview.tab("日志"))

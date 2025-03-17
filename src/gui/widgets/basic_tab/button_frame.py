@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from src.logic.cursor_pro.keep_alive import init_keep_alive
 
 class ButtonFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -12,6 +13,7 @@ class ButtonFrame(ctk.CTkFrame):
 
     def reset_account(self):
         # TODO: 实现账号重置逻辑
+        init_keep_alive()
         pass
 
     def reset_machine_code(self):

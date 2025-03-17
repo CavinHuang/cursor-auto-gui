@@ -19,6 +19,9 @@ class ConfigManager:
     def get_config(self):
         return self.config
 
+    def get_config_value(self, key, default=None):
+        return self.config.get(key, default)
+
     def update_config(self, new_config):
         try:
             os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
