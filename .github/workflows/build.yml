@@ -58,7 +58,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: CursorPro-MacOS-ARM64
-        path: dist/CursorPro.app
+        path: dist/
+        if-no-files-found: error
 
   build-linux:
     runs-on: ubuntu-22.04
@@ -112,7 +113,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: CursorPro-MacOS-Intel
-        path: dist/CursorPro.app
+        path: dist/
+        if-no-files-found: error
 
   create-release:
     needs: [build-windows, build-macos-arm64, build-linux, build-macos-intel]
@@ -135,12 +137,12 @@ jobs:
           
           # macOS ARM64 打包
           cd CursorPro-MacOS-ARM64
-          zip -r ../CursorPro-MacOS-ARM64.zip .
+          ditto -c -k --sequesterRsrc --keepParent CursorPro.app ../CursorPro-MacOS-ARM64.zip
           cd ..
           
           # macOS Intel 打包
           cd CursorPro-MacOS-Intel
-          zip -r ../CursorPro-MacOS-Intel.zip .
+          ditto -c -k --sequesterRsrc --keepParent CursorPro.app ../CursorPro-MacOS-Intel.zip
           cd ..
 
       - name: Create Release
