@@ -2,13 +2,14 @@ from datetime import datetime
 import logging
 import time
 import re
+import random
 import requests
 import email
 import imaplib
 import poplib
 from email.parser import Parser
 
-from src.logic.cursor_pro.config import Config
+from .config import Config
 
 
 class EmailVerificationHandler:
@@ -34,22 +35,21 @@ class EmailVerificationHandler:
             验证码 (字符串或 None)。
         """
 
+        logging.info(f"开始获取验证码...2")
+        print(f"开始获取验证码...2")
+
         for attempt in range(max_retries):
             try:
                 logging.info(f"尝试获取验证码 (第 {attempt + 1}/{max_retries} 次)...")
 
-                if not self.imap:
-                    verify_code, first_id = self._get_latest_mail_code()
-                    if verify_code is not None and first_id is not None:
-                        self._cleanup_mail(first_id)
-                        return verify_code
+                logging.info(f"使用 IMAP 获取验证码...")
+                print(f"使用 IMAP 获取验证码..., 协议类型: {self.protocol}")
+                if self.protocol.upper() == 'IMAP':
+                    verify_code = self._get_mail_code_by_imap()
                 else:
-                    if self.protocol.upper() == 'IMAP':
-                        verify_code = self._get_mail_code_by_imap()
-                    else:
-                        verify_code = self._get_mail_code_by_pop3()
-                    if verify_code is not None:
-                        return verify_code
+                    verify_code = self._get_mail_code_by_pop3()
+                if verify_code is not None:
+                    return verify_code
 
                 if attempt < max_retries - 1:  # 除了最后一次尝试，都等待
                     logging.warning(f"未获取到验证码，{retry_interval} 秒后重试...")
@@ -73,6 +73,8 @@ class EmailVerificationHandler:
             raise Exception("获取验证码超时")
         try:
             # 连接到IMAP服务器
+            logging.info(f"连接到 IMAP 服务器: {self.imap['imap_server']}, 端口: {self.imap['imap_port']}, 用户名: {self.imap['imap_user']}, imap_dir: {self.imap['imap_dir']}")
+            print(f"连接到 IMAP 服务器: {self.imap['imap_server']}, 端口: {self.imap['imap_port']}, 用户名: {self.imap['imap_user']}, imap_dir: {self.imap['imap_dir']}, account: {self.account}")
             mail = imaplib.IMAP4_SSL(self.imap['imap_server'], self.imap['imap_port'])
             mail.login(self.imap['imap_user'], self.imap['imap_pass'])
             search_by_date=False
@@ -81,7 +83,11 @@ class EmailVerificationHandler:
                 imap_id = ("name", self.imap['imap_user'].split('@')[0], "contact", self.imap['imap_user'], "version", "1.0.0", "vendor", "imaplib")
                 mail.xatom('ID', '("' + '" "'.join(imap_id) + '")')
                 search_by_date=True
-            mail.select(self.imap['imap_dir'])
+            # mail.select(self.imap['imap_dir'])
+            # 选择收件箱
+            mail.select('inbox')
+            print(f"连接成功2${search_by_date}")
+            logging.info(f"连接成功${search_by_date}")
             if search_by_date:
                 date = datetime.now().strftime("%d-%b-%Y")
                 status, messages = mail.search(None, f'ON {date} UNSEEN')
@@ -91,6 +97,8 @@ class EmailVerificationHandler:
                 return None
 
             mail_ids = messages[0].split()
+            print(f'获取到邮件数量: ${len(mail_ids)}')
+            logging.info(f"获取到邮件数量: ${len(mail_ids)}")
             if not mail_ids:
                 # 没有获取到，就在获取一次
                 return self._get_mail_code_by_imap(retry=retry + 1)
@@ -119,7 +127,7 @@ class EmailVerificationHandler:
             mail.logout()
             return None
         except Exception as e:
-            print(f"发生错误: {e}")
+            print(f"获取验证码发生错误: {e}")
             return None
 
     def _extract_imap_body(self, email_message):
@@ -155,6 +163,9 @@ class EmailVerificationHandler:
 
         pop3 = None
         try:
+            # 连接到服务器前先等待一小段随机时间，避免并发连接
+            time.sleep(random.uniform(0.5, 2))
+
             # 连接到服务器
             pop3 = poplib.POP3_SSL(self.imap['imap_server'], int(self.imap['imap_port']))
             pop3.user(self.imap['imap_user'])
@@ -163,32 +174,41 @@ class EmailVerificationHandler:
             # 获取最新的10封邮件
             num_messages = len(pop3.list()[1])
             for i in range(num_messages, max(1, num_messages-9), -1):
-                response, lines, octets = pop3.retr(i)
-                msg_content = b'\r\n'.join(lines).decode('utf-8')
-                msg = Parser().parsestr(msg_content)
+                try:
+                    response, lines, octets = pop3.retr(i)
+                    msg_content = b'\r\n'.join(lines).decode('utf-8')
+                    msg = Parser().parsestr(msg_content)
 
-                # 检查发件人
-                if 'no-reply@cursor.sh' in msg.get('From', ''):
-                    # 提取邮件正文
-                    body = self._extract_pop3_body(msg)
-                    if body:
-                        # 查找验证码
-                        code_match = re.search(r"\b\d{6}\b", body)
-                        if code_match:
-                            code = code_match.group()
-                            pop3.quit()
-                            return code
+                    # 检查发件人
+                    if 'no-reply@cursor.sh' in msg.get('From', ''):
+                        # 提取邮件正文
+                        body = self._extract_pop3_body(msg)
+                        if body:
+                            # 查找验证码
+                            code_match = re.search(r"\b\d{6}\b", body)
+                            if code_match:
+                                code = code_match.group()
+                                pop3.quit()
+                                return code
+                except Exception as e:
+                    logging.error(f"处理邮件 {i} 时出错: {e}")
+                    continue
 
-            pop3.quit()
+            if pop3:
+                pop3.quit()
+            # 增加重试间隔时间，避免频繁连接
+            time.sleep(random.uniform(2, 5))
             return self._get_mail_code_by_pop3(retry=retry + 1)
 
         except Exception as e:
-            print(f"发生错误: {e}")
+            logging.error(f"POP3连接发生错误: {e}")
             if pop3:
                 try:
                     pop3.quit()
                 except:
                     pass
+            # 连接失败时增加等待时间
+            time.sleep(random.uniform(3, 7))
             return None
 
     def _extract_pop3_body(self, email_message):

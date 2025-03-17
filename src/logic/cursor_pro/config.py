@@ -1,4 +1,3 @@
-import os
 from src.logic.config.config_manager import ConfigManager
 from src.logic.log import logger
 
@@ -15,6 +14,7 @@ class Config:
         self.imap_pass = config['imap_pass'].strip()
         self.domain = config['domain'].strip()
         self.imap_dir = 'inbox'
+        self.imap_protocol = config['imap_protocol'].strip()
 
         self.check_config()
 
@@ -42,7 +42,7 @@ class Config:
         Returns:
             str: 'IMAP' 或 'POP3'
         """
-        return os.getenv('IMAP_PROTOCOL', 'POP3')
+        return self.imap_protocol
 
     def check_config(self):
         """检查配置项是否有效

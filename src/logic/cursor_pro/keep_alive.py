@@ -211,8 +211,7 @@ def sign_up_account(
         last_name,
         account,
         password,
-        settings_url,
-        email_handler):
+        settings_url):
     logger.info("=== 开始注册账号流程 ===")
     logger.info(f"正在访问注册页面: {sign_up_url}")
     tab.get(sign_up_url)
@@ -260,6 +259,9 @@ def sign_up_account(
         return False
 
     handle_turnstile(tab)
+
+    logger.info("正在初始化邮箱验证模块...")
+    email_handler = EmailVerificationHandler(account)
 
     while True:
         try:
@@ -375,9 +377,6 @@ def init_keep_alive():
 
     logger.info(f"生成的邮箱账号: {account}")
 
-    logger.info("正在初始化邮箱验证模块...")
-    email_handler = EmailVerificationHandler(account)
-
     auto_update_cursor_auth = True
 
     tab = browser.latest_tab
@@ -394,8 +393,7 @@ def init_keep_alive():
         last_name,
         account,
         password,
-        settings_url,
-        email_handler)
+        settings_url)
     if sign_res:
       logger.info("正在获取会话令牌...")
       token = get_cursor_session_token(tab)
