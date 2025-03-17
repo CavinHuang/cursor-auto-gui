@@ -8,25 +8,25 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
-    
+
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
         pip install -r requirements.txt
-        
+
     - name: Build EXE
       run: |
-        pyinstaller CursorKeepAlive.spec
-        
+        python scripts/build_windows.py
+
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       with:
@@ -35,52 +35,52 @@ jobs:
 
   build-macos-arm64:
     runs-on: macos-latest
-    
+
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
         pip install -r requirements.txt
-        
+
     - name: Build MacOS ARM executable
       run: |
-        pyinstaller CursorKeepAlive.spec
-        
+        python scripts/build_macos_arm64.py
+
     - name: Upload MacOS ARM artifact
       uses: actions/upload-artifact@v4
       with:
         name: CursorPro-MacOS-ARM64
-        path: dist/CursorPro
+        path: dist/CursorPro.app
 
   build-linux:
     runs-on: ubuntu-22.04
-    
+
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
         pip install -r requirements.txt
-        
+
     - name: Build Linux executable
       run: |
-        pyinstaller CursorKeepAlive.spec
-        
+        python scripts/build_linux.py
+
     - name: Upload Linux artifact
       uses: actions/upload-artifact@v4
       with:
@@ -105,28 +105,26 @@ jobs:
         arch -x86_64 pip3 install -r requirements.txt
 
     - name: Build MacOS Intel executable
-      env:
-        TARGET_ARCH: 'x86_64'
       run: |
-        arch -x86_64 python3 -m PyInstaller CursorKeepAlive.spec
-        
+        python scripts/build_macos_intel.py
+
     - name: Upload MacOS Intel artifact
       uses: actions/upload-artifact@v4
       with:
         name: CursorPro-MacOS-Intel
-        path: dist/CursorPro
+        path: dist/CursorPro.app
 
   create-release:
     needs: [build-windows, build-macos-arm64, build-linux, build-macos-intel]
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/')
-    
+
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-          
+
       - name: Create release archives
         run: |
           cd artifacts
