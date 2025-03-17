@@ -1,5 +1,4 @@
 from datetime import datetime
-import logging
 import time
 import re
 import random
@@ -9,8 +8,9 @@ import imaplib
 import poplib
 from email.parser import Parser
 
-from .config import Config
+from src.logic.log import logger
 
+from .config import Config
 
 class EmailVerificationHandler:
     def __init__(self,account):
@@ -35,14 +35,14 @@ class EmailVerificationHandler:
             验证码 (字符串或 None)。
         """
 
-        logging.info(f"开始获取验证码...2")
+        logger.info(f"开始获取验证码...2")
         print(f"开始获取验证码...2")
 
         for attempt in range(max_retries):
             try:
-                logging.info(f"尝试获取验证码 (第 {attempt + 1}/{max_retries} 次)...")
+                logger.info(f"尝试获取验证码 (第 {attempt + 1}/{max_retries} 次)...")
 
-                logging.info(f"使用 IMAP 获取验证码...")
+                logger.info(f"使用 IMAP 获取验证码...")
                 print(f"使用 IMAP 获取验证码..., 协议类型: {self.protocol}")
                 if self.protocol.upper() == 'IMAP':
                     verify_code = self._get_mail_code_by_imap()
@@ -52,13 +52,13 @@ class EmailVerificationHandler:
                     return verify_code
 
                 if attempt < max_retries - 1:  # 除了最后一次尝试，都等待
-                    logging.warning(f"未获取到验证码，{retry_interval} 秒后重试...")
+                    logger.warning(f"未获取到验证码，{retry_interval} 秒后重试...")
                     time.sleep(retry_interval)
 
             except Exception as e:
-                logging.error(f"获取验证码失败: {e}")  # 记录更一般的异常
+                logger.error(f"获取验证码失败: {e}")  # 记录更一般的异常
                 if attempt < max_retries - 1:
-                    logging.error(f"发生错误，{retry_interval} 秒后重试...")
+                    logger.error(f"发生错误，{retry_interval} 秒后重试...")
                     time.sleep(retry_interval)
                 else:
                     raise Exception(f"获取验证码失败且已达最大重试次数: {e}") from e
@@ -73,21 +73,21 @@ class EmailVerificationHandler:
             raise Exception("获取验证码超时")
         try:
             # 连接到IMAP服务器
-            logging.info(f"连接到 IMAP 服务器: {self.imap['imap_server']}, 端口: {self.imap['imap_port']}, 用户名: {self.imap['imap_user']}, imap_dir: {self.imap['imap_dir']}")
+            logger.info(f"连接到 IMAP 服务器: {self.imap['imap_server']}, 端口: {self.imap['imap_port']}, 用户名: {self.imap['imap_user']}, imap_dir: {self.imap['imap_dir']}")
             print(f"连接到 IMAP 服务器: {self.imap['imap_server']}, 端口: {self.imap['imap_port']}, 用户名: {self.imap['imap_user']}, imap_dir: {self.imap['imap_dir']}, account: {self.account}")
             mail = imaplib.IMAP4_SSL(self.imap['imap_server'], self.imap['imap_port'])
             mail.login(self.imap['imap_user'], self.imap['imap_pass'])
             search_by_date=False
             # 针对网易系邮箱，imap登录后需要附带联系信息，且后续邮件搜索逻辑更改为获取当天的未读邮件
-            if self.imap['imap_user'].endswith(('@163.com', '@126.com', '@yeah.net')):
-                imap_id = ("name", self.imap['imap_user'].split('@')[0], "contact", self.imap['imap_user'], "version", "1.0.0", "vendor", "imaplib")
-                mail.xatom('ID', '("' + '" "'.join(imap_id) + '")')
-                search_by_date=True
+            # if self.imap['imap_user'].endswith(('@163.com', '@126.com', '@yeah.net')):
+            #     imap_id = ("name", self.imap['imap_user'].split('@')[0], "contact", self.imap['imap_user'], "version", "1.0.0", "vendor", "imaplib")
+            #     mail.xatom('ID', '("' + '" "'.join(imap_id) + '")')
+            #     search_by_date=True
+            #     print(f"连接成功1${search_by_date}")
             # mail.select(self.imap['imap_dir'])
             # 选择收件箱
             mail.select('inbox')
-            print(f"连接成功2${search_by_date}")
-            logging.info(f"连接成功${search_by_date}")
+            logger.info(f"连接成功${search_by_date}")
             if search_by_date:
                 date = datetime.now().strftime("%d-%b-%Y")
                 status, messages = mail.search(None, f'ON {date} UNSEEN')
@@ -97,8 +97,7 @@ class EmailVerificationHandler:
                 return None
 
             mail_ids = messages[0].split()
-            print(f'获取到邮件数量: ${len(mail_ids)}')
-            logging.info(f"获取到邮件数量: ${len(mail_ids)}")
+            logger.info(f"获取到邮件数量: ${len(mail_ids)}")
             if not mail_ids:
                 # 没有获取到，就在获取一次
                 return self._get_mail_code_by_imap(retry=retry + 1)
@@ -142,7 +141,7 @@ class EmailVerificationHandler:
                         body = part.get_payload(decode=True).decode(charset, errors='ignore')
                         return body
                     except Exception as e:
-                        logging.error(f"解码邮件正文失败: {e}")
+                        logger.error(f"解码邮件正文失败: {e}")
         else:
             content_type = email_message.get_content_type()
             if content_type == "text/plain":
@@ -151,7 +150,7 @@ class EmailVerificationHandler:
                     body = email_message.get_payload(decode=True).decode(charset, errors='ignore')
                     return body
                 except Exception as e:
-                    logging.error(f"解码邮件正文失败: {e}")
+                    logger.error(f"解码邮件正文失败: {e}")
         return ""
 
     # 使用 POP3 获取邮件
@@ -191,7 +190,7 @@ class EmailVerificationHandler:
                                 pop3.quit()
                                 return code
                 except Exception as e:
-                    logging.error(f"处理邮件 {i} 时出错: {e}")
+                    logger.error(f"处理邮件 {i} 时出错: {e}")
                     continue
 
             if pop3:
@@ -201,7 +200,7 @@ class EmailVerificationHandler:
             return self._get_mail_code_by_pop3(retry=retry + 1)
 
         except Exception as e:
-            logging.error(f"POP3连接发生错误: {e}")
+            logger.error(f"POP3连接发生错误: {e}")
             if pop3:
                 try:
                     pop3.quit()
@@ -222,13 +221,13 @@ class EmailVerificationHandler:
                         body = part.get_payload(decode=True).decode('utf-8', errors='ignore')
                         return body
                     except Exception as e:
-                        logging.error(f"解码邮件正文失败: {e}")
+                        logger.error(f"解码邮件正文失败: {e}")
         else:
             try:
                 body = email_message.get_payload(decode=True).decode('utf-8', errors='ignore')
                 return body
             except Exception as e:
-                logging.error(f"解码邮件正文失败: {e}")
+                logger.error(f"解码邮件正文失败: {e}")
         return ""
 
     # 手动输入验证码
@@ -257,7 +256,7 @@ class EmailVerificationHandler:
         # 从邮件文本中提取6位数字验证码
         mail_text = mail_detail_data.get("text", "")
         mail_subject = mail_detail_data.get("subject", "")
-        logging.info(f"找到邮件主题: {mail_subject}")
+        logger.info(f"找到邮件主题: {mail_subject}")
         # 修改正则表达式，确保 6 位数字不紧跟在字母或域名相关符号后面
         code_match = re.search(r"(?<![a-zA-Z@.])\b\d{6}\b", mail_text)
 

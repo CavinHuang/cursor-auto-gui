@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景 -->
+    <defs>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7B68EE;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" rx="50" fill="url(#bgGradient)"/>
+
+    <!-- 包装盒主体 -->
+    <path d="M256 80 L96 160 L256 240 L416 160 Z" fill="#FFFFFF" opacity="0.9"/>
+    <path d="M96 160 L96 352 L256 432 L256 240 Z" fill="#FFFFFF" opacity="0.7"/>
+    <path d="M256 240 L256 432 L416 352 L416 160 Z" fill="#FFFFFF" opacity="0.8"/>
+
+    <!-- 光晕效果 -->
+    <circle cx="256" cy="256" r="120" fill="#FFFFFF" opacity="0.1"/>
+
+    <!-- 箭头 -->
+    <path d="M256 140 L256 180 L236 160 L256 140 Z" fill="#4A90E2"/>
+    <path d="M236 300 L276 300 L256 320 L236 300 Z" fill="#4A90E2"/>
+
+    <!-- 装饰线条 -->
+    <path d="M176 200 L336 200" stroke="#4A90E2" stroke-width="4" opacity="0.6"/>
+    <path d="M176 240 L336 240" stroke="#4A90E2" stroke-width="4" opacity="0.6"/>
+
+    <!-- 圆角矩形装饰 -->
+    <rect x="216" y="280" width="80" height="20" rx="10" fill="#4A90E2" opacity="0.8"/>
+
+    <!-- 发光效果 -->
+    <circle cx="256" cy="256" r="180" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.2"/>
+</svg>
