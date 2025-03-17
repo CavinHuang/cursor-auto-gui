@@ -128,7 +128,22 @@ jobs:
       - name: Create release archives
         run: |
           cd artifacts
+          # 为 macOS 版本创建临时目录并复制 .app
+          mkdir -p temp_arm64
+          mkdir -p temp_intel
+          cp -R CursorPro-MacOS-ARM64/CursorPro.app temp_arm64/
+          cp -R CursorPro-MacOS-Intel/CursorPro.app temp_intel/
+          
+          # Windows 和 Linux 保持不变
           zip -r CursorPro-Windows.zip CursorPro-Windows/
+          zip -r CursorPro-Linux.zip CursorPro-Linux/
+          
+          # macOS 版本从临时目录打包
+          cd temp_arm64 && zip -r ../CursorPro-MacOS-ARM64.zip CursorPro.app && cd ..
+          cd temp_intel && zip -r ../CursorPro-MacOS-Intel.zip CursorPro.app && cd ..
+          
+          # 清理临时目录
+          rm -rf temp_arm64 temp_intel
           zip -r CursorPro-MacOS-ARM64.zip CursorPro-MacOS-ARM64/
           zip -r CursorPro-Linux.zip CursorPro-Linux/
           zip -r CursorPro-MacOS-Intel.zip CursorPro-MacOS-Intel/
