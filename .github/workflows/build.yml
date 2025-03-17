@@ -58,7 +58,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: CursorPro-MacOS-ARM64
-        path: dist/CursorPro
+        path: dist/CursorPro.app
 
   build-linux:
     runs-on: ubuntu-22.04
@@ -112,7 +112,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: CursorPro-MacOS-Intel
-        path: dist
+        path: dist/CursorPro.app
 
   create-release:
     needs: [build-windows, build-macos-arm64, build-linux, build-macos-intel]
@@ -129,9 +129,9 @@ jobs:
         run: |
           cd artifacts
           zip -r CursorPro-Windows.zip CursorPro-Windows/
-          zip -r CursorPro-MacOS-ARM64.zip CursorPro-MacOS-ARM64/
+          zip -r CursorPro-MacOS-ARM64.zip CursorPro-MacOS-ARM64
           zip -r CursorPro-Linux.zip CursorPro-Linux/
-          zip -r CursorPro-MacOS-Intel.zip CursorPro-MacOS-Intel/
+          zip -r CursorPro-MacOS-Intel.zip CursorPro-MacOS-Intel
 
 
       - name: Create Release
