@@ -10,24 +10,13 @@ class Config:
 
         self.imap = True
         self.imap_server = config['imap_server'].strip()
-        self.imap_port = config['imap_port'].strip()
+        self.imap_port = str(config['imap_port']).strip()
         self.imap_user = config['imap_user'].strip()
         self.imap_pass = config['imap_pass'].strip()
+        self.domain = config['domain'].strip()
         self.imap_dir = 'inbox'
 
         self.check_config()
-
-    def get_temp_mail(self):
-
-        return self.temp_mail
-
-    def get_temp_mail_epin(self):
-
-        return self.temp_mail_epin
-
-    def get_temp_mail_ext(self):
-
-        return self.temp_mail_ext
 
     def get_imap(self):
         if not self.imap:
@@ -41,7 +30,11 @@ class Config:
         }
 
     def get_domain(self):
-        return self.domain
+        domain_arr = self.domain.split(";")
+        # 随机返回一个域名
+        import random
+        domain = random.choice(domain_arr)
+        return domain
 
     def get_protocol(self):
         """获取邮件协议类型
@@ -69,32 +62,26 @@ class Config:
             if not self.check_is_valid(getattr(self, key)):
                 raise ValueError(f"{name}未配置，请在 .env 文件中设置 {key.upper()}")
 
-        # 检查邮箱配置
-        if self.temp_mail != "null":
-            # tempmail.plus 模式
-            if not self.check_is_valid(self.temp_mail):
-                raise ValueError("临时邮箱未配置，请在 .env 文件中设置 TEMP_MAIL")
-        else:
-            # IMAP 模式
-            imap_configs = {
-                "imap_server": "IMAP服务器",
-                "imap_port": "IMAP端口",
-                "imap_user": "IMAP用户名",
-                "imap_pass": "IMAP密码",
-            }
+        # IMAP 模式
+        imap_configs = {
+            "imap_server": "IMAP服务器",
+            "imap_port": "IMAP端口",
+            "imap_user": "IMAP用户名",
+            "imap_pass": "IMAP密码",
+        }
 
-            for key, name in imap_configs.items():
-                value = getattr(self, key)
-                if value == "null" or not self.check_is_valid(value):
-                    raise ValueError(
-                        f"{name}未配置，请在 .env 文件中设置 {key.upper()}"
-                    )
-
-            # IMAP_DIR 是可选的，如果设置了就检查其有效性
-            if self.imap_dir != "null" and not self.check_is_valid(self.imap_dir):
+        for key, name in imap_configs.items():
+            value = getattr(self, key)
+            if value == "null" or not self.check_is_valid(value):
                 raise ValueError(
-                    "IMAP收件箱目录配置无效，请在 .env 文件中正确设置 IMAP_DIR"
+                    f"{name}未配置，请在 .env 文件中设置 {key.upper()}"
                 )
+
+        # IMAP_DIR 是可选的，如果设置了就检查其有效性
+        if self.imap_dir != "null" and not self.check_is_valid(self.imap_dir):
+            raise ValueError(
+                "IMAP收件箱目录配置无效，请在 .env 文件中正确设置 IMAP_DIR"
+            )
 
     def check_is_valid(self, value):
         """检查配置项是否有效
@@ -114,10 +101,6 @@ class Config:
             logger.info(f"\033[32mIMAP用户名: {self.imap_user}\033[0m")
             logger.info(f"\033[32mIMAP密码: {'*' * len(self.imap_pass)}\033[0m")
             logger.info(f"\033[32mIMAP收件箱目录: {self.imap_dir}\033[0m")
-        if self.temp_mail != "null":
-            logger.info(
-                f"\033[32m临时邮箱: {self.temp_mail}{self.temp_mail_ext}\033[0m"
-            )
         logger.info(f"\033[32m域名: {self.domain}\033[0m")
 
 

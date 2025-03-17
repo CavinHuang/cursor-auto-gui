@@ -5,7 +5,7 @@ from src.logic.config.config_manager import ConfigManager
 class SettingFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.config_manager = ConfigManager(os.path.join("datas", "settings.json"))
+        self.config_manager = ConfigManager()
         self.config = self.config_manager.get_config()
         # 创建可滚动容器
         self.scrollable_frame = ctk.CTkScrollableFrame(self, height=350)

@@ -23,7 +23,8 @@ class BrowserManager:
         except FileNotFoundError as e:
             logging.warning(f"警告: {e}")
 
-        browser_path = ConfigManager.get_config_value("browser_path")
+        config_manager = ConfigManager()
+        browser_path = config_manager.get_config_value("browser_path")
         if browser_path:
             co.set_paths(browser_path=browser_path)
 

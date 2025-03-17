@@ -4,13 +4,12 @@ import os
 import random
 import time
 from typing import Optional
-from src.logic.cursor_pro import go_cursor_help
+from src.logic.cursor_pro import go_cursor_help, patch_cursor_get_machine_id
 from src.logic.cursor_pro.cursor_auth_manager import CursorAuthManager
 from src.logic.cursor_pro.email_generator import EmailGenerator
 from src.logic.cursor_pro.get_email_code import EmailVerificationHandler
 from src.logic.cursor_pro.reset_machine import MachineIDResetter
 from src.logic.log import logger
-import patch_cursor_get_machine_id
 from fake_useragent import UserAgent
 from src.utils.browser_utils import BrowserManager
 
@@ -191,6 +190,18 @@ def handle_turnstile(tab, max_retries: int = 2, retry_interval: tuple = (1, 2)) 
         save_screenshot(tab, "error")
         raise TurnstileError(error_msg)
 
+def get_user_agent():
+    """获取user_agent"""
+    try:
+        # 使用JavaScript获取user agent
+        browser_manager = BrowserManager()
+        browser = browser_manager.init_browser()
+        user_agent = browser.latest_tab.run_js("return navigator.userAgent")
+        browser_manager.quit()
+        return user_agent
+    except Exception as e:
+        logger.error(f"获取user agent失败: {str(e)}")
+        return None
 
 def sign_up_account(
         browser,
@@ -336,7 +347,14 @@ def init_keep_alive():
   greater_than_0_45 = check_cursor_version()
   try:
     logger.info("正在初始化浏览器...")
-    user_agent = UserAgent()
+    # 获取user_agent
+    user_agent = get_user_agent()
+    if not user_agent:
+        logger.error("获取user agent失败，使用默认值")
+        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+    # 剔除user_agent中的"HeadlessChrome"
+    user_agent = user_agent.replace("HeadlessChrome", "Chrome")
 
     browser_manager = BrowserManager()
     browser = browser_manager.init_browser(user_agent)
@@ -386,9 +404,9 @@ def init_keep_alive():
           update_cursor_auth(
               email=account, access_token=token, refresh_token=token
           )
-          logger.info(
-              "请前往开源项目查看更多信息：https://github.com/chengazhen/cursor-auto-free"
-          )
+          # logger.info(
+          #     "请前往开源项目查看更多信息：https://github.com/chengazhen/cursor-auto-free"
+          # )
           logger.info("重置机器码...")
           reset_machine_id(greater_than_0_45)
           logger.info("所有操作已完成")

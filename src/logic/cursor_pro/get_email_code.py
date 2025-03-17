@@ -2,21 +2,22 @@ from datetime import datetime
 import logging
 import time
 import re
-from config import Config
 import requests
 import email
 import imaplib
 import poplib
 from email.parser import Parser
 
+from src.logic.cursor_pro.config import Config
+
 
 class EmailVerificationHandler:
     def __init__(self,account):
         self.imap = Config().get_imap()
-        self.username = Config().get_temp_mail()
-        self.epin = Config().get_temp_mail_epin()
+        self.username = None
+        self.epin = None
         self.session = requests.Session()
-        self.emailExtension = Config().get_temp_mail_ext()
+        self.emailExtension = None
         # 获取协议类型，默认为 POP3
         self.protocol = Config().get_protocol() or 'POP3'
         self.account = account

@@ -1,3 +1,4 @@
+import os
 import random
 import time
 from src.logic.cursor_pro.config import Config
@@ -22,7 +23,9 @@ class EmailGenerator:
         self.default_last_name = self.generate_random_name()
 
     def load_names(self):
-        with open("names-dataset.txt", "r") as file:
+        """加载姓名数据集"""
+        names_path = os.path.join(os.path.dirname(__file__),'../../../resources', "names-dataset.txt")
+        with open(names_path, "r") as file:
             return file.read().split()
 
     def generate_random_name(self):
