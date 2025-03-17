@@ -47,7 +47,7 @@ if platform_name == 'win32':
         console=False,
         disable_windowed_traceback=False,
         target_arch=target_arch,
-        icon='resources/icons/icon.ico'
+        icon='resources\icons\icon.ico'
     )
 elif platform_name == 'darwin':
     exe = EXE(
