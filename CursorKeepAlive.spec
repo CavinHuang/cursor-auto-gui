@@ -66,7 +66,7 @@ elif platform_name == 'darwin':
         runtime_tmpdir=None,
         console=False,
         disable_windowed_traceback=False,
-        target_arch=target_arch
+        target_arch=target_arch,
         icon='resources/icons/icon.icns'
     )
     app = BUNDLE(
@@ -97,6 +97,6 @@ else:
         runtime_tmpdir=None,
         console=False,
         disable_windowed_traceback=False,
-        target_arch=target_arch
+        target_arch=target_arch,
         icon='resources/icons/icon.png'
     )
