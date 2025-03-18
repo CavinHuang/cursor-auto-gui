@@ -135,15 +135,11 @@ jobs:
           zip -r CursorPro-Windows.zip CursorPro-Windows
           zip -r CursorPro-Linux.zip CursorPro-Linux
           
-          # macOS ARM64 打包
-          cd CursorPro-MacOS-ARM64
-          ditto -c -k --sequesterRsrc --keepParent CursorPro.app ../CursorPro-MacOS-ARM64.zip
-          cd ..
+          # macOS ARM64 打包 - 使用标准 zip 命令并保留目录结构
+          (cd CursorPro-MacOS-ARM64 && zip -r ../CursorPro-MacOS-ARM64.zip CursorPro.app)
           
-          # macOS Intel 打包
-          cd CursorPro-MacOS-Intel
-          ditto -c -k --sequesterRsrc --keepParent CursorPro.app ../CursorPro-MacOS-Intel.zip
-          cd ..
+          # macOS Intel 打包 - 使用标准 zip 命令并保留目录结构
+          (cd CursorPro-MacOS-Intel && zip -r ../CursorPro-MacOS-Intel.zip CursorPro.app)
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
