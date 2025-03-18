@@ -122,6 +122,10 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
+      - name: Extract version
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -132,21 +136,20 @@ jobs:
           cd artifacts
 
           # Windows 和 Linux 打包
-          zip -r CursorPro-Windows.zip CursorPro-Windows
-          zip -r CursorPro-Linux.zip CursorPro-Linux
+          zip -r CursorPro-Windows-${{ env.VERSION }}.zip CursorPro-Windows
+          zip -r CursorPro-Linux-${{ env.VERSION }}.zip CursorPro-Linux
 
           # macOS ARM64 和 Intel 打包 - 使用普通 zip 但保留目录结构
-          (cd CursorPro-MacOS-ARM64 && zip -r ../CursorPro-MacOS-ARM64.zip .)
-          (cd CursorPro-MacOS-Intel && zip -r ../CursorPro-MacOS-Intel.zip .)
+          (cd CursorPro-MacOS-ARM64 && zip -r ../CursorPro-MacOS-ARM64-${{ env.VERSION }}.zip .)
+          (cd CursorPro-MacOS-Intel && zip -r ../CursorPro-MacOS-Intel-${{ env.VERSION }}.zip .)
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/CursorPro-Windows.zip
-            artifacts/CursorPro-MacOS-ARM64.zip
-            artifacts/CursorPro-Linux.zip
-            artifacts/CursorPro-MacOS-Intel.zip
-
+            artifacts/CursorPro-Windows-${{ env.VERSION }}.zip
+            artifacts/CursorPro-MacOS-ARM64-${{ env.VERSION }}.zip
+            artifacts/CursorPro-Linux-${{ env.VERSION }}.zip
+            artifacts/CursorPro-MacOS-Intel-${{ env.VERSION }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
