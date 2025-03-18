@@ -14,7 +14,6 @@ class MainWindow:
         # 初始化日志管理器
         self.log_manager = LogManager()
 
-        # 初始化文件监听器
         self.window.title("Cursor Auto GUI")
         self.window.geometry("600x500")
 
@@ -49,6 +48,4 @@ class MainWindow:
         self.log_manager.set_gui_logger(self.log_frame)
 
     def create(self):
-        # 启动文件监听
-        self.file_watcher.start()
         return self.window
