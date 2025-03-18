@@ -57,6 +57,11 @@ jobs:
     - name: Set executable permissions
       run: |
         chmod +x dist/CursorPro.app/Contents/MacOS/CursorPro
+        find dist/CursorPro.app -type f -name "*.so" -o -name "*.dylib" | xargs chmod +x
+
+    - name: Remove quarantine attribute
+      run: |
+        xattr -rc dist/CursorPro.app
 
     - name: Upload MacOS ARM artifact
       uses: actions/upload-artifact@v4
