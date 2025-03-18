@@ -1,6 +1,6 @@
 <!-- markdownlint-disable -->
 <p align="center">
-  <img width="240" src="./resource/icons/icon.png?raw=true" style="text-align: center;"/>
+  <img width="240" src="./resources/icons/icon.png?raw=true" style="text-align: center;"/>
 </p>
 <h1 align="center">CursorPro</h1>
 <h4 align="center">一款简单高效的Cursor自动续期工具</h4>
