@@ -130,24 +130,14 @@ jobs:
       - name: Create release archives
         run: |
           cd artifacts
-<<<<<<< HEAD
-          zip -r CursorPro-Windows.zip CursorPro-Windows/
-          zip -r CursorPro-MacOS-ARM64.zip CursorPro-MacOS-ARM64
-          zip -r CursorPro-Linux.zip CursorPro-Linux/
-          zip -r CursorPro-MacOS-Intel.zip CursorPro-MacOS-Intel
 
-=======
-          
           # Windows 和 Linux 打包
           zip -r CursorPro-Windows.zip CursorPro-Windows
           zip -r CursorPro-Linux.zip CursorPro-Linux
-          
-          # macOS ARM64 打包 - 使用标准 zip 命令并保留目录结构
-          (cd CursorPro-MacOS-ARM64 && zip -r ../CursorPro-MacOS-ARM64.zip CursorPro.app)
-          
-          # macOS Intel 打包 - 使用标准 zip 命令并保留目录结构
-          (cd CursorPro-MacOS-Intel && zip -r ../CursorPro-MacOS-Intel.zip CursorPro.app)
->>>>>>> ba8625db6263d063d8649c19719da1aacad4fbfc
+
+          # macOS ARM64 和 Intel 打包 - 使用普通 zip 但保留目录结构
+          (cd CursorPro-MacOS-ARM64 && zip -r ../CursorPro-MacOS-ARM64.zip .)
+          (cd CursorPro-MacOS-Intel && zip -r ../CursorPro-MacOS-Intel.zip .)
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
