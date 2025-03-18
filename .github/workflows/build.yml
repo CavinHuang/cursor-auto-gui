@@ -27,11 +27,15 @@ jobs:
       run: |
         python scripts/build_windows.py
 
+    - name: Create ZIP package
+      run: |
+        powershell Compress-Archive -Path dist\CursorPro.exe -DestinationPath dist\CursorPro-Windows-${{ github.ref_name }}.zip
+
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       with:
-        name: CursorPro-Windows
-        path: dist/CursorPro.exe
+        name: CursorPro-Windows-${{ github.ref_name }}.zip
+        path: dist/CursorPro-Windows-${{ github.ref_name }}.zip
 
   build-macos-arm64:
     runs-on: macos-latest
@@ -86,11 +90,15 @@ jobs:
       run: |
         xattr -rc dist/CursorPro.app
 
+    - name: Create ZIP package
+      run: |
+        ditto -c -k --keepParent dist/CursorPro.app dist/CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip
+
     - name: Upload MacOS ARM artifact
       uses: actions/upload-artifact@v4
       with:
-        name: CursorPro-MacOS-ARM64
-        path: dist/
+        name: CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip
+        path: dist/CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip
         if-no-files-found: error
 
   build-linux:
@@ -114,11 +122,16 @@ jobs:
       run: |
         python scripts/build_linux.py
 
+    - name: Create ZIP package
+      run: |
+        cd dist
+        zip -r CursorPro-Linux-${{ github.ref_name }}.zip CursorPro
+
     - name: Upload Linux artifact
       uses: actions/upload-artifact@v4
       with:
-        name: CursorPro-Linux
-        path: dist/CursorPro
+        name: CursorPro-Linux-${{ github.ref_name }}.zip
+        path: dist/CursorPro-Linux-${{ github.ref_name }}.zip
 
   build-macos-intel:
     runs-on: macos-latest
@@ -144,48 +157,64 @@ jobs:
     - name: Set executable permissions
       run: |
         chmod +x dist/CursorPro.app/Contents/MacOS/CursorPro
+        find dist/CursorPro.app -type f -name "*.so" -o -name "*.dylib" | xargs chmod +x
+
+    - name: Create entitlements file
+      run: |
+        cat > entitlements.plist << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+            <true/>
+            <key>com.apple.security.cs.allow-jit</key>
+            <true/>
+            <key>com.apple.security.cs.disable-library-validation</key>
+            <true/>
+            <key>com.apple.security.automation.apple-events</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+
+    - name: Ad-hoc code signing
+      run: |
+        codesign --force --deep --sign - --entitlements entitlements.plist --options runtime dist/CursorPro.app
+
+    - name: Remove quarantine attribute
+      run: |
+        xattr -rc dist/CursorPro.app
+
+    - name: Create ZIP package
+      run: |
+        ditto -c -k --keepParent dist/CursorPro.app dist/CursorPro-MacOS-Intel-${{ github.ref_name }}.zip
 
     - name: Upload MacOS Intel artifact
       uses: actions/upload-artifact@v4
       with:
-        name: CursorPro-MacOS-Intel
-        path: dist/
+        name: CursorPro-MacOS-Intel-${{ github.ref_name }}.zip
+        path: dist/CursorPro-MacOS-Intel-${{ github.ref_name }}.zip
         if-no-files-found: error
 
   create-release:
     needs: [build-windows, build-macos-arm64, build-linux, build-macos-intel]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - name: Extract version
-        id: extract_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      - name: Create release archives
-        run: |
-          cd artifacts
-
-          # Windows 和 Linux 打包
-          zip -r CursorPro-Windows-${{ env.VERSION }}.zip CursorPro-Windows
-          zip -r CursorPro-Linux-${{ env.VERSION }}.zip CursorPro-Linux
-
-          # macOS ARM64 和 Intel 打包 - 使用保留权限的zip命令
-          (cd CursorPro-MacOS-ARM64 && zip -r ../CursorPro-MacOS-ARM64-${{ env.VERSION }}.zip . -X)
-          (cd CursorPro-MacOS-Intel && zip -r ../CursorPro-MacOS-Intel-${{ env.VERSION }}.zip . -X)
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/CursorPro-Windows-${{ env.VERSION }}.zip
-            artifacts/CursorPro-MacOS-ARM64-${{ env.VERSION }}.zip
-            artifacts/CursorPro-Linux-${{ env.VERSION }}.zip
-            artifacts/CursorPro-MacOS-Intel-${{ env.VERSION }}.zip
+            artifacts/CursorPro-Windows-${{ github.ref_name }}.zip/CursorPro-Windows-${{ github.ref_name }}.zip
+            artifacts/CursorPro-Linux-${{ github.ref_name }}.zip/CursorPro-Linux-${{ github.ref_name }}.zip
+            artifacts/CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip/CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip
+            artifacts/CursorPro-MacOS-Intel-${{ github.ref_name }}.zip/CursorPro-MacOS-Intel-${{ github.ref_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
