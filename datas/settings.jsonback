@@ -1,0 +1,10 @@
+{
+    "domain": "jingkaai.site;terminalxp.site",
+    "imap_server": "imap.gmail.com",
+    "imap_port": 993,
+    "imap_user": "hcmzq0802@gmail.com",
+    "imap_pass": "vkmqxnnsydfreyxh",
+    "imap_protocol": "IMAP",
+    "browser_path": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "browser_user_agent": ""
+}
