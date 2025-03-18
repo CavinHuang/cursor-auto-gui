@@ -75,9 +75,11 @@ elif platform_name == 'darwin':
         bundle_identifier='com.cursor.pro',
         info_plist={
             'LSUIElement': True,
-            'CFBundleShortVersionString': '1.0.0',
-            'CFBundleVersion': '1.0.0',
-            'NSHighResolutionCapable': True
+            'CFBundleShortVersionString': '${VERSION}',
+            'CFBundleVersion': '${VERSION}',
+            'NSHighResolutionCapable': True,
+            'NSAppleEventsUsageDescription': '此应用需要控制系统事件以模拟鼠标移动。',
+            'NSHumanReadableCopyright': 'Copyright © 2023. All rights reserved.'
         }
     )
 else:

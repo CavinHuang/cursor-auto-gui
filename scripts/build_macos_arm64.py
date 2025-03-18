@@ -25,6 +25,9 @@ def build_macos_arm64():
     # 运行PyInstaller
     subprocess.check_call([sys.executable, '-m', 'PyInstaller', 'CursorKeepAlive.spec'])
 
+    # 确保包含设置权限的步骤
+    os.chmod('dist/CursorPro.app/Contents/MacOS/CursorPro', 0o755)
+
     print('MacOS ARM64 build completed successfully!')
 
 if __name__ == '__main__':

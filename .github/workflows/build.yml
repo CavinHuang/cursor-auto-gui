@@ -54,6 +54,10 @@ jobs:
       run: |
         python scripts/build_macos_arm64.py
 
+    - name: Set executable permissions
+      run: |
+        chmod +x dist/CursorPro.app/Contents/MacOS/CursorPro
+
     - name: Upload MacOS ARM artifact
       uses: actions/upload-artifact@v4
       with:
@@ -109,6 +113,10 @@ jobs:
       run: |
         python scripts/build_macos_intel.py
 
+    - name: Set executable permissions
+      run: |
+        chmod +x dist/CursorPro.app/Contents/MacOS/CursorPro
+
     - name: Upload MacOS Intel artifact
       uses: actions/upload-artifact@v4
       with:
@@ -139,9 +147,9 @@ jobs:
           zip -r CursorPro-Windows-${{ env.VERSION }}.zip CursorPro-Windows
           zip -r CursorPro-Linux-${{ env.VERSION }}.zip CursorPro-Linux
 
-          # macOS ARM64 和 Intel 打包 - 使用普通 zip 但保留目录结构
-          (cd CursorPro-MacOS-ARM64 && zip -r ../CursorPro-MacOS-ARM64-${{ env.VERSION }}.zip .)
-          (cd CursorPro-MacOS-Intel && zip -r ../CursorPro-MacOS-Intel-${{ env.VERSION }}.zip .)
+          # macOS ARM64 和 Intel 打包 - 使用保留权限的zip命令
+          (cd CursorPro-MacOS-ARM64 && zip -r ../CursorPro-MacOS-ARM64-${{ env.VERSION }}.zip . -X)
+          (cd CursorPro-MacOS-Intel && zip -r ../CursorPro-MacOS-Intel-${{ env.VERSION }}.zip . -X)
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
