@@ -20,7 +20,8 @@ def build_windows():
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
 
     # 运行PyInstaller
-    subprocess.check_call([sys.executable, '-m', 'PyInstaller', 'CursorKeepAlive.spec'])
+    excludes = [..., 'watchdog', ...]
+    subprocess.check_call([sys.executable, '-m', 'PyInstaller', 'CursorKeepAlive.spec', '--exclude-module', ','.join(excludes)])
 
     print('Windows build completed successfully!')
 
