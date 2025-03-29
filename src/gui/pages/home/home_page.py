@@ -8,7 +8,8 @@ class HomePage(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-
+        # 默认使用浅色主题
+        self.is_dark_theme = False
         self.setup_ui()
 
     def setup_ui(self):
@@ -105,6 +106,13 @@ class HomePage(QWidget):
         self.reset_button.clicked.connect(self.reset_machine_code)
         self.reg_button.clicked.connect(self.register_new_account)
 
+        # 保存UI元素的引用，以便在切换主题时更新样式
+        self.section_labels = [quick_op_label, log_label]
+        self.frames = [reset_frame, reg_frame]
+        self.action_labels = [reset_label, reg_label]
+        self.desc_labels = [reset_desc, reg_desc]
+        self.action_buttons = [self.reset_button, self.reg_button]
+
     def show_sample_logs(self):
         """显示样例日志信息"""
         # 设置日志管理器的GUI日志输出对象
@@ -138,3 +146,105 @@ class HomePage(QWidget):
         logger.log("正在提交注册请求...", LogLevel.INFO)
         logger.log("账号注册成功！", LogLevel.INFO)
         logger.log("完整注册流程执行完毕！", LogLevel.INFO)
+
+    def set_theme(self, is_dark):
+        """设置主题"""
+        if self.is_dark_theme != is_dark:
+            self.is_dark_theme = is_dark
+            self.apply_theme_styles()
+
+    def apply_theme_styles(self):
+        """应用主题样式"""
+        if self.is_dark_theme:
+            # 深色主题样式
+            self.setStyleSheet("background-color: #222;")
+
+            # 更新区域标题样式
+            for label in self.section_labels:
+                label.setStyleSheet("font-size: 16px; font-weight: bold; color: #f0f0f0; margin-bottom: 10px;")
+
+            # 更新框架样式
+            for frame in self.frames:
+                frame.setStyleSheet("border: 1px solid #444; border-radius: 4px; padding: 10px; background-color: #333;")
+
+            # 更新操作标签样式
+            for label in self.action_labels:
+                label.setStyleSheet("font-size: 14px; font-weight: bold; color: #f0f0f0;")
+
+            # 更新描述标签样式
+            for label in self.desc_labels:
+                label.setStyleSheet("color: #aaa; font-size: 12px;")
+
+            # 更新按钮样式 - 保持绿色
+            for button in self.action_buttons:
+                button.setStyleSheet(
+                    "QPushButton {"
+                    "   background-color: #41cd52;"
+                    "   color: white;"
+                    "   border-radius: 4px;"
+                    "   padding: 5px 15px;"
+                    "   font-size: 13px;"
+                    "}"
+                    "QPushButton:hover {"
+                    "   background-color: #3dbd4e;"
+                    "}"
+                    "QPushButton:pressed {"
+                    "   background-color: #38b049;"
+                    "}"
+                )
+
+            # 更新日志文本区域样式
+            self.log_text.setStyleSheet(
+                "border: 1px solid #444; "
+                "border-radius: 4px; "
+                "padding: 10px; "
+                "font-family: 'Courier New'; "
+                "background-color: #2d2d2d; "
+                "color: #e0e0e0;"
+            )
+
+        else:
+            # 浅色主题样式
+            self.setStyleSheet("background-color: white;")
+
+            # 更新区域标题样式
+            for label in self.section_labels:
+                label.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
+
+            # 更新框架样式
+            for frame in self.frames:
+                frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
+
+            # 更新操作标签样式
+            for label in self.action_labels:
+                label.setStyleSheet("font-size: 14px; font-weight: bold;")
+
+            # 更新描述标签样式
+            for label in self.desc_labels:
+                label.setStyleSheet("color: #666; font-size: 12px;")
+
+            # 更新按钮样式 - 保持绿色
+            for button in self.action_buttons:
+                button.setStyleSheet(
+                    "QPushButton {"
+                    "   background-color: #41cd52;"
+                    "   color: white;"
+                    "   border-radius: 4px;"
+                    "   padding: 5px 15px;"
+                    "   font-size: 13px;"
+                    "}"
+                    "QPushButton:hover {"
+                    "   background-color: #3dbd4e;"
+                    "}"
+                    "QPushButton:pressed {"
+                    "   background-color: #38b049;"
+                    "}"
+                )
+
+            # 更新日志文本区域样式
+            self.log_text.setStyleSheet(
+                "border: 1px solid #ddd; "
+                "border-radius: 4px; "
+                "padding: 10px; "
+                "font-family: 'Courier New';"
+            )

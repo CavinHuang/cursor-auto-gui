@@ -3,7 +3,6 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                                 QFrame, QStackedWidget, QScrollArea, QSizePolicy)
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QFont
-from .widgets.icons import IconManager
 from src.logic.log.log_manager import logger, LogLevel
 # 导入页面模块
 from .pages.home import HomePage
@@ -19,10 +18,10 @@ class MainWindow(QMainWindow):
 
         # 设置窗口标题和大小
         self.setWindowTitle("Cursor Pro")
-        self.resize(800, 600)
+        self.resize(960, 600)
 
         # 设置应用程序图标
-        self.setWindowIcon(IconManager.get_app_icon())
+        self.setWindowIcon(QIcon(":/icons/app_icon.png"))
 
         # 创建中央窗口部件
         central_widget = QWidget()
@@ -54,89 +53,90 @@ class MainWindow(QMainWindow):
     def create_left_menu(self):
         """创建左侧菜单"""
         left_frame = QFrame()
+        left_frame.setFixedWidth(200)  # 设置固定宽度
         left_frame.setStyleSheet("background-color: #f4f4f4;")
         left_frame.setObjectName("leftMenu")
 
         layout = QVBoxLayout(left_frame)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # 标题
         title_label = QLabel("Cursor Pro")
-        title_label.setStyleSheet("color: #41cd52; font-size: 20px; font-weight: bold; padding: 20px;")
+        title_label.setStyleSheet("color: #41cd52; font-size: 22px; font-weight: bold;")
         title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(title_label)
 
         # 系统类型
         os_label = QLabel("系统类型: macOS")
-        os_label.setStyleSheet("color: #666; font-size: 12px; padding-left: 20px; padding-bottom: 20px;")
+        os_label.setStyleSheet("color: #666; font-size: 12px;")
         layout.addWidget(os_label)
 
+        # 添加一些间距
+        layout.addSpacing(20)
+
         # 主页按钮
-        self.home_btn = QPushButton("  主页")
-        self.home_btn.setIcon(IconManager.get_home_icon())
-        self.home_btn.setIconSize(QSize(16, 16))
+        self.home_btn = QPushButton("  🏠  主页")
         self.home_btn.setStyleSheet(
             "QPushButton {"
             "   background-color: transparent;"
             "   color: #333;"
             "   text-align: left;"
-            "   padding: 10px 20px;"
-            "   border: none;"
+            "   padding: 12px 15px;"
+            "   border-radius: 6px;"
             "   font-size: 14px;"
+            "   font-weight: bold;"
             "}"
             "QPushButton:hover {"
-            "   background-color: #e0e0e0;"
+            "   background-color: rgba(65, 205, 82, 0.1);"
             "}"
             "QPushButton:pressed {"
-            "   background-color: #d0d0d0;"
+            "   background-color: rgba(65, 205, 82, 0.2);"
             "}"
         )
         self.home_btn.clicked.connect(self.show_home_page)
         layout.addWidget(self.home_btn)
 
         # 设置按钮
-        self.settings_btn = QPushButton("  设置")
-        self.settings_btn.setIcon(IconManager.get_settings_icon())
-        self.settings_btn.setIconSize(QSize(16, 16))
+        self.settings_btn = QPushButton("  ⚙️  设置")
         self.settings_btn.setStyleSheet(
             "QPushButton {"
-            "   background-color: transparent;"
-            "   color: #333;"
+            "   background-color: #41cd52;"
+            "   color: white;"
             "   text-align: left;"
-            "   padding: 10px 20px;"
-            "   border: none;"
+            "   padding: 12px 15px;"
+            "   border-radius: 6px;"
             "   font-size: 14px;"
+            "   font-weight: bold;"
             "}"
             "QPushButton:hover {"
-            "   background-color: #e0e0e0;"
+            "   background-color: #3dbd4e;"
             "}"
             "QPushButton:pressed {"
-            "   background-color: #d0d0d0;"
+            "   background-color: #38b049;"
             "}"
         )
         self.settings_btn.clicked.connect(self.show_settings_page)
         layout.addWidget(self.settings_btn)
 
         # 关于按钮
-        self.about_btn = QPushButton("  关于")
-        self.about_btn.setIcon(IconManager.get_about_icon())
-        self.about_btn.setIconSize(QSize(16, 16))
+        self.about_btn = QPushButton("  ℹ️  关于")
         self.about_btn.setStyleSheet(
             "QPushButton {"
             "   background-color: transparent;"
             "   color: #333;"
             "   text-align: left;"
-            "   padding: 10px 20px;"
-            "   border: none;"
+            "   padding: 12px 15px;"
+            "   border-radius: 6px;"
             "   font-size: 14px;"
+            "   font-weight: bold;"
             "}"
             "QPushButton:hover {"
-            "   background-color: #e0e0e0;"
+            "   background-color: rgba(65, 205, 82, 0.1);"
             "}"
             "QPushButton:pressed {"
-            "   background-color: #d0d0d0;"
+            "   background-color: rgba(65, 205, 82, 0.2);"
             "}"
         )
         self.about_btn.clicked.connect(self.show_about_page)
@@ -148,23 +148,21 @@ class MainWindow(QMainWindow):
         layout.addWidget(spacer)
 
         # 主题切换按钮
-        self.theme_btn = QPushButton("  切换到深色主题")
-        self.theme_btn.setIcon(IconManager.get_theme_icon())
-        self.theme_btn.setIconSize(QSize(16, 16))
+        self.theme_btn = QPushButton("  🌙  切换到深色主题")
         self.theme_btn.setStyleSheet(
             "QPushButton {"
             "   background-color: transparent;"
             "   color: #333;"
             "   text-align: left;"
-            "   padding: 10px 20px;"
-            "   border: none;"
+            "   padding: 12px 15px;"
+            "   border-radius: 6px;"
             "   font-size: 14px;"
             "}"
             "QPushButton:hover {"
-            "   background-color: #e0e0e0;"
+            "   background-color: rgba(65, 205, 82, 0.1);"
             "}"
             "QPushButton:pressed {"
-            "   background-color: #d0d0d0;"
+            "   background-color: rgba(65, 205, 82, 0.2);"
             "}"
         )
         self.theme_btn.clicked.connect(self.toggle_theme)
@@ -172,7 +170,7 @@ class MainWindow(QMainWindow):
 
         # 底部标签
         footer_label = QLabel("By Ctrler")
-        footer_label.setStyleSheet("color: #666; font-size: 12px; padding: 10px 20px;")
+        footer_label.setStyleSheet("color: #666; font-size: 12px; margin-top: 10px;")
         footer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(footer_label)
 
@@ -231,65 +229,17 @@ class MainWindow(QMainWindow):
             # 更新设置页面的主题状态
             self.settings_page.set_theme_state(False)
 
+            # 更新关于页面的主题状态
+            self.about_page.set_theme(False)
+
+            # 更新主页的主题状态
+            self.home_page.set_theme(False)
+
             # 更新主题切换按钮文本
-            self.theme_btn.setText("  切换到深色主题")
+            self.theme_btn.setText("  🌙  切换到深色主题")
 
             # 更新左侧菜单样式
             self.left_menu.setStyleSheet("background-color: #f4f4f4;")
-
-            # 更新主页按钮样式
-            self.home_btn.setStyleSheet(
-                "QPushButton {"
-                "   background-color: " + ("#e0e0e0" if self.stacked_widget.currentIndex() == 0 else "transparent") + ";"
-                "   color: #333;"
-                "   text-align: left;"
-                "   padding: 10px 20px;"
-                "   border: none;"
-                "   font-size: 14px;"
-                "}"
-                "QPushButton:hover {"
-                "   background-color: #e0e0e0;"
-                "}"
-                "QPushButton:pressed {"
-                "   background-color: #d0d0d0;"
-                "}"
-            )
-
-            # 更新设置按钮样式
-            self.settings_btn.setStyleSheet(
-                "QPushButton {"
-                "   background-color: " + ("#e0e0e0" if self.stacked_widget.currentIndex() == 1 else "transparent") + ";"
-                "   color: #333;"
-                "   text-align: left;"
-                "   padding: 10px 20px;"
-                "   border: none;"
-                "   font-size: 14px;"
-                "}"
-                "QPushButton:hover {"
-                "   background-color: #e0e0e0;"
-                "}"
-                "QPushButton:pressed {"
-                "   background-color: #d0d0d0;"
-                "}"
-            )
-
-            # 更新关于按钮样式
-            self.about_btn.setStyleSheet(
-                "QPushButton {"
-                "   background-color: " + ("#e0e0e0" if self.stacked_widget.currentIndex() == 2 else "transparent") + ";"
-                "   color: #333;"
-                "   text-align: left;"
-                "   padding: 10px 20px;"
-                "   border: none;"
-                "   font-size: 14px;"
-                "}"
-                "QPushButton:hover {"
-                "   background-color: #e0e0e0;"
-                "}"
-                "QPushButton:pressed {"
-                "   background-color: #d0d0d0;"
-                "}"
-            )
 
             # 更新主题切换按钮样式
             self.theme_btn.setStyleSheet(
@@ -297,20 +247,23 @@ class MainWindow(QMainWindow):
                 "   background-color: transparent;"
                 "   color: #333;"
                 "   text-align: left;"
-                "   padding: 10px 20px;"
-                "   border: none;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
                 "   font-size: 14px;"
                 "}"
                 "QPushButton:hover {"
-                "   background-color: #e0e0e0;"
+                "   background-color: rgba(65, 205, 82, 0.1);"
                 "}"
                 "QPushButton:pressed {"
-                "   background-color: #d0d0d0;"
+                "   background-color: rgba(65, 205, 82, 0.2);"
                 "}"
             )
 
             # 更新内容区域样式
             self.content_area.setStyleSheet("background-color: white;")
+
+            # 更新菜单按钮样式
+            self.update_menu_button_styles(self.stacked_widget.currentIndex())
 
     def set_dark_theme(self):
         """设置深色主题"""
@@ -321,65 +274,17 @@ class MainWindow(QMainWindow):
             # 更新设置页面的主题状态
             self.settings_page.set_theme_state(True)
 
+            # 更新关于页面的主题状态
+            self.about_page.set_theme(True)
+
+            # 更新主页的主题状态
+            self.home_page.set_theme(True)
+
             # 更新主题切换按钮文本
-            self.theme_btn.setText("  切换到浅色主题")
+            self.theme_btn.setText("  ☀️  切换到浅色主题")
 
             # 更新左侧菜单样式
             self.left_menu.setStyleSheet("background-color: #333;")
-
-            # 更新主页按钮样式
-            self.home_btn.setStyleSheet(
-                "QPushButton {"
-                "   background-color: " + ("#444" if self.stacked_widget.currentIndex() == 0 else "transparent") + ";"
-                "   color: #f0f0f0;"
-                "   text-align: left;"
-                "   padding: 10px 20px;"
-                "   border: none;"
-                "   font-size: 14px;"
-                "}"
-                "QPushButton:hover {"
-                "   background-color: #444;"
-                "}"
-                "QPushButton:pressed {"
-                "   background-color: #555;"
-                "}"
-            )
-
-            # 更新设置按钮样式
-            self.settings_btn.setStyleSheet(
-                "QPushButton {"
-                "   background-color: " + ("#444" if self.stacked_widget.currentIndex() == 1 else "transparent") + ";"
-                "   color: #f0f0f0;"
-                "   text-align: left;"
-                "   padding: 10px 20px;"
-                "   border: none;"
-                "   font-size: 14px;"
-                "}"
-                "QPushButton:hover {"
-                "   background-color: #444;"
-                "}"
-                "QPushButton:pressed {"
-                "   background-color: #555;"
-                "}"
-            )
-
-            # 更新关于按钮样式
-            self.about_btn.setStyleSheet(
-                "QPushButton {"
-                "   background-color: " + ("#444" if self.stacked_widget.currentIndex() == 2 else "transparent") + ";"
-                "   color: #f0f0f0;"
-                "   text-align: left;"
-                "   padding: 10px 20px;"
-                "   border: none;"
-                "   font-size: 14px;"
-                "}"
-                "QPushButton:hover {"
-                "   background-color: #444;"
-                "}"
-                "QPushButton:pressed {"
-                "   background-color: #555;"
-                "}"
-            )
 
             # 更新主题切换按钮样式
             self.theme_btn.setStyleSheet(
@@ -387,20 +292,23 @@ class MainWindow(QMainWindow):
                 "   background-color: transparent;"
                 "   color: #f0f0f0;"
                 "   text-align: left;"
-                "   padding: 10px 20px;"
-                "   border: none;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
                 "   font-size: 14px;"
                 "}"
                 "QPushButton:hover {"
-                "   background-color: #444;"
+                "   background-color: rgba(65, 205, 82, 0.2);"
                 "}"
                 "QPushButton:pressed {"
-                "   background-color: #555;"
+                "   background-color: rgba(65, 205, 82, 0.3);"
                 "}"
             )
 
             # 更新内容区域样式
             self.content_area.setStyleSheet("background-color: #222;")
+
+            # 更新菜单按钮样式
+            self.update_menu_button_styles(self.stacked_widget.currentIndex())
 
     def show_home_page(self):
         """显示主页"""
@@ -425,62 +333,80 @@ class MainWindow(QMainWindow):
     def update_menu_button_styles(self, active_index):
         """更新菜单按钮样式"""
         # 根据当前主题和活动页面索引设置按钮样式
-        active_bg = "#444" if self.is_dark_theme else "#e0e0e0"
-        normal_bg = "transparent"
-        text_color = "#f0f0f0" if self.is_dark_theme else "#333"
-        hover_bg = "#444" if self.is_dark_theme else "#e0e0e0"
-        pressed_bg = "#555" if self.is_dark_theme else "#d0d0d0"
+        if self.is_dark_theme:
+            # 深色主题
+            inactive_style = (
+                "QPushButton {"
+                "   background-color: transparent;"
+                "   color: #f0f0f0;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "   font-weight: bold;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: rgba(65, 205, 82, 0.2);"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: rgba(65, 205, 82, 0.3);"
+                "}"
+            )
+            active_style = (
+                "QPushButton {"
+                "   background-color: #41cd52;"
+                "   color: white;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "   font-weight: bold;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: #3dbd4e;"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: #38b049;"
+                "}"
+            )
+        else:
+            # 浅色主题
+            inactive_style = (
+                "QPushButton {"
+                "   background-color: transparent;"
+                "   color: #333;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "   font-weight: bold;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: rgba(65, 205, 82, 0.1);"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: rgba(65, 205, 82, 0.2);"
+                "}"
+            )
+            active_style = (
+                "QPushButton {"
+                "   background-color: #41cd52;"
+                "   color: white;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "   font-weight: bold;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: #3dbd4e;"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: #38b049;"
+                "}"
+            )
 
-        # 主页按钮
-        self.home_btn.setStyleSheet(
-            "QPushButton {"
-            f"   background-color: {active_bg if active_index == 0 else normal_bg};"
-            f"   color: {text_color};"
-            "   text-align: left;"
-            "   padding: 10px 20px;"
-            "   border: none;"
-            "   font-size: 14px;"
-            "}"
-            "QPushButton:hover {"
-            f"   background-color: {hover_bg};"
-            "}"
-            "QPushButton:pressed {"
-            f"   background-color: {pressed_bg};"
-            "}"
-        )
-
-        # 设置按钮
-        self.settings_btn.setStyleSheet(
-            "QPushButton {"
-            f"   background-color: {active_bg if active_index == 1 else normal_bg};"
-            f"   color: {text_color};"
-            "   text-align: left;"
-            "   padding: 10px 20px;"
-            "   border: none;"
-            "   font-size: 14px;"
-            "}"
-            "QPushButton:hover {"
-            f"   background-color: {hover_bg};"
-            "}"
-            "QPushButton:pressed {"
-            f"   background-color: {pressed_bg};"
-            "}"
-        )
-
-        # 关于按钮
-        self.about_btn.setStyleSheet(
-            "QPushButton {"
-            f"   background-color: {active_bg if active_index == 2 else normal_bg};"
-            f"   color: {text_color};"
-            "   text-align: left;"
-            "   padding: 10px 20px;"
-            "   border: none;"
-            "   font-size: 14px;"
-            "}"
-            "QPushButton:hover {"
-            f"   background-color: {hover_bg};"
-            "}"
-            "QPushButton:pressed {"
-            f"   background-color: {pressed_bg};"
-            "}"
-        )
+        # 设置按钮样式
+        self.home_btn.setStyleSheet(active_style if active_index == 0 else inactive_style)
+        self.settings_btn.setStyleSheet(active_style if active_index == 1 else inactive_style)
+        self.about_btn.setStyleSheet(active_style if active_index == 2 else inactive_style)

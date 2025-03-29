@@ -2,103 +2,240 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                               QLabel, QTextEdit, QFrame)
 from PySide6.QtCore import Qt, QSize
 from src.gui.widgets.icons import IconManager
+import platform
+import os
 
 class AboutPage(QWidget):
-    """关于页类，显示应用信息、版本和开发者信息"""
+    """关于页类，显示应用信息、版本和使用说明"""
 
     def __init__(self, parent=None):
         super().__init__(parent)
-
+        # 默认使用浅色主题
+        self.is_dark_theme = False
         self.setup_ui()
 
     def setup_ui(self):
         """设置UI界面"""
         layout = QVBoxLayout(self)
-        layout.setSpacing(20)
+        layout.setSpacing(20)  # 增加区域间距
+        layout.setContentsMargins(20, 20, 20, 20)
 
-        about_label = QLabel("关于")
-        about_label.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
-        layout.addWidget(about_label)
+        # 版本信息
+        version_frame = self.create_section_frame("版本信息")
+        version_layout = version_frame.layout()
 
-        # 应用信息区域
-        app_frame = QFrame()
-        app_frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 20px;")
-        app_layout = QVBoxLayout(app_frame)
+        version_label = QLabel("v3.0.0")
+        version_label.setStyleSheet("font-size: 15px; padding: 5px 0; border: none; background-color: transparent;")
+        version_layout.addWidget(version_label)
 
-        # 应用名称和版本
-        title_layout = QHBoxLayout()
+        layout.addWidget(version_frame)
 
-        # 应用图标
-        icon_label = QLabel()
-        icon_pixmap = IconManager.get_app_icon().pixmap(QSize(64, 64))
-        icon_label.setPixmap(icon_pixmap)
-        title_layout.addWidget(icon_label)
+        # 微信公众号
+        wechat_frame = self.create_section_frame("微信公众号")
+        wechat_layout = wechat_frame.layout()
 
-        title_info_layout = QVBoxLayout()
-        app_name_label = QLabel("Cursor Pro")
-        app_name_label.setStyleSheet("font-size: 18px; font-weight: bold;")
-        title_info_layout.addWidget(app_name_label)
+        wechat_label = QLabel("Ctrler")
+        wechat_label.setStyleSheet("font-size: 15px; color: #4CAF50; padding: 5px 0; border: none; background-color: transparent;")
+        wechat_layout.addWidget(wechat_label)
 
-        version_label = QLabel("版本：v3.0.0")
-        version_label.setStyleSheet("font-size: 14px; color: #666;")
-        title_info_layout.addWidget(version_label)
+        layout.addWidget(wechat_frame)
 
-        title_layout.addLayout(title_info_layout)
-        title_layout.addStretch()
+        # 使用说明
+        usage_frame = self.create_section_frame("使用说明")
+        usage_layout = usage_frame.layout()
 
-        app_layout.addLayout(title_layout)
+        # 运行环境
+        env_container = QWidget()
+        env_container.setStyleSheet("border: none; background-color: transparent;")
+        env_container_layout = QVBoxLayout(env_container)
+        env_container_layout.setContentsMargins(0, 0, 0, 0)
+
+        env_title = QLabel("运行环境")
+        env_title.setStyleSheet("font-size: 14px; font-weight: bold; border: none; background-color: transparent;")
+        env_container_layout.addWidget(env_title)
+
+        env_desc = QLabel("运行环境需要 Chrome 浏览器")
+        env_desc.setStyleSheet("font-size: 13px; color: #555; border: none; background-color: transparent;")
+        env_container_layout.addWidget(env_desc)
+
+        usage_layout.addWidget(env_container)
 
         # 分隔线
+        self.add_separator(usage_layout)
+
+        # 启动说明
+        startup_container = QWidget()
+        startup_container.setStyleSheet("border: none; background-color: transparent;")
+        startup_container_layout = QVBoxLayout(startup_container)
+        startup_container_layout.setContentsMargins(0, 0, 0, 0)
+
+        startup_title = QLabel("启动说明")
+        startup_title.setStyleSheet("font-size: 14px; font-weight: bold; border: none; background-color: transparent;")
+        startup_container_layout.addWidget(startup_title)
+
+        startup_desc = QLabel("启动时将自动关闭已运行的 Cursor")
+        startup_desc.setStyleSheet("font-size: 13px; color: #555; border: none; background-color: transparent;")
+        startup_container_layout.addWidget(startup_desc)
+
+        usage_layout.addWidget(startup_container)
+
+        # 分隔线
+        self.add_separator(usage_layout)
+
+        # 域名配置
+        domain_container = QWidget()
+        domain_container.setStyleSheet("border: none; background-color: transparent;")
+        domain_container_layout = QVBoxLayout(domain_container)
+        domain_container_layout.setContentsMargins(0, 0, 0, 0)
+
+        domain_title = QLabel("域名配置")
+        domain_title.setStyleSheet("font-size: 14px; font-weight: bold; border: none; background-color: transparent;")
+        domain_container_layout.addWidget(domain_title)
+
+        domain_desc = QLabel("如遇域名失效，请前往公众号获取最新配置或自行设置")
+        domain_desc.setWordWrap(True)
+        domain_desc.setStyleSheet("font-size: 13px; color: #555; border: none; background-color: transparent;")
+        domain_container_layout.addWidget(domain_desc)
+
+        usage_layout.addWidget(domain_container)
+
+        layout.addWidget(usage_frame)
+
+        # 配置文件路径
+        config_frame = self.create_section_frame("配置文件路径")
+        config_layout = config_frame.layout()
+
+        # 平台和路径容器
+        config_container = QWidget()
+        config_container.setStyleSheet("border: none; background-color: transparent;")
+        config_container_layout = QVBoxLayout(config_container)
+        config_container_layout.setContentsMargins(0, 0, 0, 0)
+
+        # 当前平台
+        platform_name = "macOS" if platform.system() == "Darwin" else platform.system()
+        platform_label = QLabel(f"当前平台：{platform_name}")
+        platform_label.setStyleSheet("font-size: 13px; margin-top: 5px; border: none; background-color: transparent;")
+        config_container_layout.addWidget(platform_label)
+
+        # 配置文件路径
+        home = os.path.expanduser("~")
+        config_path = f"~/cursor_pro"
+        config_path_label = QLabel(config_path)
+        config_path_label.setStyleSheet("font-size: 13px; color: #4CAF50; border: none; background-color: transparent;")
+        config_container_layout.addWidget(config_path_label)
+
+        config_layout.addWidget(config_container)
+
+        layout.addWidget(config_frame)
+
+        # 添加空白区域
+        layout.addStretch()
+
+        # 保存UI元素的引用，以便在切换主题时更新样式
+        self.frames = [version_frame, wechat_frame, usage_frame, config_frame]
+        self.containers = [env_container, startup_container, domain_container, config_container]
+        self.titles = [env_title, startup_title, domain_title]
+        self.descriptions = [env_desc, startup_desc, domain_desc, platform_label]
+        self.special_labels = [version_label, wechat_label, config_path_label]
+
+    def create_section_frame(self, title):
+        """创建带标题的区域框架"""
+        frame = QFrame()
+        frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; background-color: transparent;")
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(8)
+
+        title_label = QLabel(title)
+        title_label.setStyleSheet("font-size: 15px; font-weight: bold; border: none; background-color: transparent;")
+        layout.addWidget(title_label)
+
+        return frame
+
+    def add_separator(self, layout):
+        """添加分隔线"""
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.HLine)
         separator.setFrameShadow(QFrame.Shadow.Sunken)
-        separator.setStyleSheet("background-color: #ddd; margin: 10px 0;")
-        app_layout.addWidget(separator)
+        separator.setStyleSheet("background-color: #e5e5e5; margin: 8px 0; border: none;")
+        layout.addWidget(separator)
 
-        # 应用描述
-        desc_label = QLabel("Cursor Pro 是一个自动化工具，用于管理和操作 Cursor IDE 的机器码和账号。")
-        desc_label.setWordWrap(True)
-        desc_label.setStyleSheet("font-size: 14px; line-height: 1.4;")
-        app_layout.addWidget(desc_label)
+    def set_theme(self, is_dark):
+        """设置主题"""
+        if self.is_dark_theme != is_dark:
+            self.is_dark_theme = is_dark
+            self.apply_theme_styles()
 
-        # 应用特性
-        features_label = QLabel("主要功能：")
-        features_label.setStyleSheet("font-size: 14px; font-weight: bold; margin-top: 10px;")
-        app_layout.addWidget(features_label)
+    def apply_theme_styles(self):
+        """应用主题样式"""
+        if self.is_dark_theme:
+            # 深色主题样式
+            self.setStyleSheet("background-color: #222;")
 
-        features_list = QTextEdit()
-        features_list.setReadOnly(True)
-        features_list.setStyleSheet("border: none; background-color: transparent; font-size: 14px;")
-        features_list.setMaximumHeight(100)
-        features_list.setText("• 重置机器码，自动生成新的随机机器ID\n• 完整的注册流程，自动创建新账号\n• 简洁直观的用户界面\n• 详细的操作日志")
-        app_layout.addWidget(features_list)
+            # 更新框架样式
+            for frame in self.frames:
+                frame.setStyleSheet("border: 1px solid #444; border-radius: 4px; background-color: transparent;")
 
-        layout.addWidget(app_frame)
+            # 更新容器样式
+            for container in self.containers:
+                container.setStyleSheet("border: none; background-color: transparent;")
 
-        # 开发者信息区域
-        dev_frame = QFrame()
-        dev_frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 20px;")
-        dev_layout = QVBoxLayout(dev_frame)
+            # 更新标题样式
+            for title in self.titles:
+                title.setStyleSheet("font-size: 14px; font-weight: bold; color: #f0f0f0; border: none; background-color: transparent;")
 
-        dev_title = QLabel("开发者信息")
-        dev_title.setStyleSheet("font-size: 14px; font-weight: bold;")
-        dev_layout.addWidget(dev_title)
+            # 更新描述文本样式
+            for desc in self.descriptions:
+                desc.setStyleSheet("font-size: 13px; color: #aaa; border: none; background-color: transparent;")
 
-        dev_name = QLabel("开发者：Ctrler")
-        dev_name.setStyleSheet("font-size: 14px; margin-top: 5px;")
-        dev_layout.addWidget(dev_name)
+            # 更新特殊标签样式
+            self.special_labels[0].setStyleSheet("font-size: 15px; color: #f0f0f0; padding: 5px 0; border: none; background-color: transparent;")  # version_label
+            self.special_labels[1].setStyleSheet("font-size: 15px; color: #4CAF50; padding: 5px 0; border: none; background-color: transparent;")  # wechat_label
+            self.special_labels[2].setStyleSheet("font-size: 13px; color: #4CAF50; border: none; background-color: transparent;")  # config_path_label
 
-        github_link = QLabel('<a href="https://github.com/ctrler">GitHub: https://github.com/ctrler</a>')
-        github_link.setOpenExternalLinks(True)
-        github_link.setStyleSheet("font-size: 14px; margin-top: 5px;")
-        dev_layout.addWidget(github_link)
+            # 更新分隔线样式
+            for separator in self.findChildren(QFrame):
+                if separator.frameShape() == QFrame.Shape.HLine:
+                    separator.setStyleSheet("background-color: #444; margin: 8px 0; border: none;")
 
-        layout.addWidget(dev_frame)
+            # 更新所有标题标签
+            for frame in self.frames:
+                title_label = frame.layout().itemAt(0).widget()
+                if isinstance(title_label, QLabel):
+                    title_label.setStyleSheet("font-size: 15px; font-weight: bold; color: #f0f0f0; border: none; background-color: transparent;")
 
-        # 版权信息
-        copyright_label = QLabel("© 2024 Ctrler. 保留所有权利。")
-        copyright_label.setStyleSheet("font-size: 12px; color: #999; margin-top: 20px;")
-        copyright_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(copyright_label)
+        else:
+            # 浅色主题样式
+            self.setStyleSheet("background-color: white;")
 
-        layout.addStretch()
+            # 更新框架样式
+            for frame in self.frames:
+                frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; background-color: transparent;")
+
+            # 更新容器样式
+            for container in self.containers:
+                container.setStyleSheet("border: none; background-color: transparent;")
+
+            # 更新标题样式
+            for title in self.titles:
+                title.setStyleSheet("font-size: 14px; font-weight: bold; border: none; background-color: transparent;")
+
+            # 更新描述文本样式
+            for desc in self.descriptions:
+                desc.setStyleSheet("font-size: 13px; color: #555; border: none; background-color: transparent;")
+
+            # 更新特殊标签样式
+            self.special_labels[0].setStyleSheet("font-size: 15px; padding: 5px 0; border: none; background-color: transparent;")  # version_label
+            self.special_labels[1].setStyleSheet("font-size: 15px; color: #4CAF50; padding: 5px 0; border: none; background-color: transparent;")  # wechat_label
+            self.special_labels[2].setStyleSheet("font-size: 13px; color: #4CAF50; border: none; background-color: transparent;")  # config_path_label
+
+            # 更新分隔线样式
+            for separator in self.findChildren(QFrame):
+                if separator.frameShape() == QFrame.Shape.HLine:
+                    separator.setStyleSheet("background-color: #e5e5e5; margin: 8px 0; border: none;")
+
+            # 更新所有标题标签
+            for frame in self.frames:
+                title_label = frame.layout().itemAt(0).widget()
+                if isinstance(title_label, QLabel):
+                    title_label.setStyleSheet("font-size: 15px; font-weight: bold; color: #333; border: none; background-color: transparent;")
