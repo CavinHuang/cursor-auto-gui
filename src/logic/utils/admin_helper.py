@@ -49,11 +49,12 @@ def restart_as_admin():
             import ctypes
             # 获取当前脚本的路径
             script = sys.executable
-            params = sys.argv
+            # 始终使用launcher.py作为启动脚本
+            params = ["launcher.py", "--restart-as-admin"]
 
             # 以管理员权限重新启动程序
             try:
-                ctypes.windll.shell32.ShellExecuteW(None, "runas", script, " ".join(params[1:]), None, 1)
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", script, " ".join(params), None, 1)
                 return True
             except Exception as e:
                 print(f"Windows 平台请求管理员权限失败: {e}")
@@ -69,6 +70,12 @@ def restart_as_admin():
                 # 获取当前工作目录
                 current_dir = os.getcwd()
 
+                # 始终使用launcher.py作为启动脚本
+                launcher_path = os.path.join(current_dir, "launcher.py")
+                if not os.path.exists(launcher_path):
+                    print(f"错误: launcher.py 不存在于 {launcher_path}")
+                    return False
+
                 # 创建临时脚本文件，包含完整的命令和当前工作目录
                 with tempfile.NamedTemporaryFile(suffix='.sh', delete=False) as temp:
                     temp_path = temp.name
@@ -76,7 +83,7 @@ def restart_as_admin():
 echo "=== 管理员权限脚本开始执行 ==="
 cd "{current_dir}"
 echo "当前目录: $(pwd)"
-"{sys.executable}" {' '.join([f'"{arg}"' for arg in sys.argv[1:]])}
+"{sys.executable}" "{launcher_path}" --restart-as-admin
 echo "=== 管理员权限脚本执行完成 ==="
 """
                     temp.write(script_content.encode())

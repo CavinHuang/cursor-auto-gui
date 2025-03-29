@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                               QPushButton, QLabel, QTextEdit, QFrame, QMessageBox)
 from PySide6.QtCore import Qt
 from src.logic.log.log_manager import logger, LogLevel
-from src.logic.utils.admin_helper import is_admin, restart_as_admin
+from src.logic.utils.admin_helper import is_admin
 import platform
 import os
 import getpass
@@ -93,41 +93,6 @@ class HomePage(QWidget):
 
         layout.addWidget(reset_frame)
 
-        # 添加管理员权限请求区域
-        admin_frame = QFrame()
-        admin_frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
-        admin_layout = QHBoxLayout(admin_frame)
-
-        admin_label = QLabel("请求管理员权限")
-        admin_label.setStyleSheet("font-size: 14px; font-weight: bold;")
-        admin_layout.addWidget(admin_label)
-
-        admin_desc = QLabel("为Cursor Pro获取管理员权限，以使用全部功能")
-        admin_desc.setStyleSheet("color: #666; font-size: 12px;")
-        admin_layout.addWidget(admin_desc)
-
-        admin_layout.addStretch()
-
-        self.admin_button = QPushButton("请求权限")
-        self.admin_button.setStyleSheet(
-            "QPushButton {"
-            "   background-color: #41cd52;"
-            "   color: white;"
-            "   border-radius: 4px;"
-            "   padding: 5px 15px;"
-            "   font-size: 13px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: #3dbd4e;"
-            "}"
-            "QPushButton:pressed {"
-            "   background-color: #38b049;"
-            "}"
-        )
-        admin_layout.addWidget(self.admin_button)
-
-        layout.addWidget(admin_frame)
-
         # 完整注册流程区域
         reg_frame = QFrame()
         reg_frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
@@ -177,14 +142,13 @@ class HomePage(QWidget):
         # 连接信号和槽
         self.reset_button.clicked.connect(self.reset_machine_code)
         self.reg_button.clicked.connect(self.register_new_account)
-        self.admin_button.clicked.connect(self.request_admin_privileges)
 
         # 保存UI元素的引用，以便在切换主题时更新样式
         self.section_labels = [quick_op_label, log_label]
-        self.frames = [reset_frame, reg_frame, admin_frame]
-        self.action_labels = [reset_label, reg_label, admin_label]
-        self.desc_labels = [reset_desc, reg_desc, admin_desc]
-        self.action_buttons = [self.reset_button, self.reg_button, self.admin_button]
+        self.frames = [reset_frame, reg_frame]
+        self.action_labels = [reset_label, reg_label]
+        self.desc_labels = [reset_desc, reg_desc]
+        self.action_buttons = [self.reset_button, self.reg_button]
 
     def show_sample_logs(self):
         """初始化日志显示区域"""
@@ -235,43 +199,6 @@ class HomePage(QWidget):
         logger.log("步骤2：注册新账号", LogLevel.INFO)
         # 实际注册新账号的逻辑
         logger.log("完整注册流程执行完毕！", LogLevel.INFO)
-
-    def request_admin_privileges(self):
-        """请求管理员权限"""
-        logger.log("正在请求管理员权限...", LogLevel.INFO)
-
-        # 显示确认对话框
-        result = QMessageBox.question(
-            self,
-            "请求管理员权限",
-            f"Cursor Pro 需要管理员权限才能正常运行所有功能。\n当前操作系统: {platform.system()}\n是否以管理员身份重新启动程序？",
-            QMessageBox.Yes | QMessageBox.No
-        )
-
-        if result == QMessageBox.Yes:
-            logger.log("用户同意授予管理员权限，正在重启程序...", LogLevel.INFO)
-            # 以管理员权限重启程序
-            success = restart_as_admin()
-            logger.log(f"重启程序请求结果: {'成功' if success else '失败'}", LogLevel.INFO)
-
-            if success:
-                # 显示成功消息，然后退出
-                QMessageBox.information(
-                    self,
-                    "重启中",
-                    "程序即将以管理员权限重新启动，请稍候..."
-                )
-                # 退出当前实例
-                sys.exit(0)
-            else:
-                # 显示错误消息
-                QMessageBox.critical(
-                    self,
-                    "权限请求失败",
-                    f"无法以管理员权限重启程序。\n在 {platform.system()} 平台上请求权限失败。\n程序将以普通权限继续运行，部分功能可能受限。"
-                )
-        else:
-            logger.log("用户拒绝授予管理员权限", LogLevel.INFO)
 
     def set_theme(self, is_dark):
         """设置主题"""
