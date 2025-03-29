@@ -1,5 +1,4 @@
-customtkinter==5.2.1
-DrissionPage==4.1.0.9
+PySide6>=6.5.0
 python-dotenv==1.0.0
 packaging==23.2
 fake-useragent==1.1.3

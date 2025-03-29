@@ -1,67 +1,70 @@
-import sys
-from typing import Optional
-from datetime import datetime
+import logging
 from enum import Enum, auto
+from PySide6.QtWidgets import QTextEdit
+import datetime
 
 class LogLevel(Enum):
+    """日志级别枚举类"""
     DEBUG = auto()
     INFO = auto()
     WARNING = auto()
     ERROR = auto()
+    CRITICAL = auto()
 
 class LogManager:
-    _instance: Optional['LogManager'] = None
-    _gui_logger = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+    """日志管理类，用于集中管理应用程序的日志输出"""
 
     def __init__(self):
-        if not hasattr(self, '_initialized'):
-            self._initialized = True
-            self._log_level = LogLevel.INFO
+        """初始化日志管理器"""
+        self.logger = logging.getLogger("CursorPro")
+        self.logger.setLevel(logging.DEBUG)
 
-    def set_gui_logger(self, gui_logger):
+        # 控制台处理器
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+
+        # 设置日志格式
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        console_handler.setFormatter(formatter)
+
+        # 添加处理器
+        self.logger.addHandler(console_handler)
+
+        # GUI日志输出对象
+        self.gui_logger = None
+
+    def set_gui_logger(self, text_edit):
         """设置GUI日志输出对象"""
-        self._gui_logger = gui_logger
+        if isinstance(text_edit, QTextEdit):
+            self.gui_logger = text_edit
 
-    def set_log_level(self, level: LogLevel):
-        """设置日志级别"""
-        self._log_level = level
+    def log(self, message, level=LogLevel.INFO):
+        """记录日志"""
+        if level == LogLevel.DEBUG:
+            self.logger.debug(message)
+        elif level == LogLevel.INFO:
+            self.logger.info(message)
+        elif level == LogLevel.WARNING:
+            self.logger.warning(message)
+        elif level == LogLevel.ERROR:
+            self.logger.error(message)
+        elif level == LogLevel.CRITICAL:
+            self.logger.critical(message)
 
-    def _format_message(self, level: LogLevel, message: str) -> str:
-        """格式化日志消息"""
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        return f'[{timestamp}] [{level.name}] {message}'
+        # 如果设置了GUI日志输出对象，则同时在GUI中显示日志
+        if self.gui_logger:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    def _log(self, level: LogLevel, message: str):
-        """输出日志"""
-        if level.value < self._log_level.value:
-            return
+            if level == LogLevel.DEBUG:
+                self.gui_logger.append(f"{timestamp} - DEBUG: {message}")
+            elif level == LogLevel.INFO:
+                self.gui_logger.append(f"{timestamp} - INFO: {message}")
+            elif level == LogLevel.WARNING:
+                self.gui_logger.append(f"⚠️ {timestamp} - WARNING: {message}")
+            elif level == LogLevel.ERROR:
+                self.gui_logger.append(f"❌ {timestamp} - ERROR: {message}")
+            elif level == LogLevel.CRITICAL:
+                self.gui_logger.append(f"🔥 {timestamp} - CRITICAL: {message}")
 
-        formatted_message = self._format_message(level, message)
-
-        # 输出到控制台
-        print(formatted_message, file=sys.stderr if level == LogLevel.ERROR else sys.stdout)
-
-        # 输出到GUI日志页面
-        if self._gui_logger:
-            self._gui_logger.append_log(formatted_message)
-
-    def debug(self, message: str):
-        """输出调试日志"""
-        self._log(LogLevel.DEBUG, message)
-
-    def info(self, message: str):
-        """输出信息日志"""
-        self._log(LogLevel.INFO, message)
-
-    def warning(self, message: str):
-        """输出警告日志"""
-        self._log(LogLevel.WARNING, message)
-
-    def error(self, message: str):
-        """输出错误日志"""
-        self._log(LogLevel.ERROR, message)
+# 创建全局日志管理器实例
+logger = LogManager()

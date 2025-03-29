@@ -1,7 +1,5 @@
-from .log_manager import LogManager, LogLevel
-
-logger = LogManager()
-logger.set_log_level(LogLevel.DEBUG)
-logger.set_gui_logger(logger)
+from .log_manager import LogManager, LogLevel, logger
 
 __all__ = ['LogManager', 'LogLevel', 'logger']
+
+# 初始化log包
