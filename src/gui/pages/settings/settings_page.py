@@ -2,11 +2,13 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                              QPushButton, QLabel, QFrame, QComboBox,
                              QCheckBox, QLineEdit, QGroupBox, QFormLayout,
                              QSpacerItem, QSizePolicy, QSlider, QSpinBox,
-                             QScrollArea, QRadioButton, QButtonGroup, QToolButton)
+                             QScrollArea, QRadioButton, QButtonGroup, QToolButton,
+                             QMessageBox)
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtGui import QIcon, QPixmap
 from src.gui.widgets.icons import IconManager
 from src.logic.log.log_manager import logger, LogLevel
+from src.logic.config.config_manager import ConfigManager
 
 class SettingsPage(QWidget):
     """设置页面类，提供应用程序各种设置选项"""
@@ -17,20 +19,34 @@ class SettingsPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # 初始化配置管理器
+        self.config_manager = ConfigManager()
+
+        # 默认设置值
+        self.set_default_values()
+
+        # 从配置文件加载设置
+        self.load_settings()
+
+        # 设置UI界面
+        self.setup_ui()
+
+    def set_default_values(self):
+        """设置默认值"""
         # 基本设置
         self.is_dark_theme = False
         self.language = "中文"
         self.enable_auto_update = True
 
         # 基础配置
-        self.domain = "isctrl.me"
+        self.domain = "xx.me"
 
         # 邮箱配置
         self.use_temp_mail = False
         self.use_imap = True
 
         # 临时邮箱配置
-        self.temp_mail = "isctrl@mailto.plus"
+        self.temp_mail = "xx@mailto.plus"
         self.temp_mail_epin = ""  # 临时邮箱PIN码
         self.temp_mail_ext = "@mailto.plus"
 
@@ -52,7 +68,56 @@ class SettingsPage(QWidget):
         self.proxy_port = 8080
         self.log_level = LogLevel.INFO
 
-        self.setup_ui()
+    def load_settings(self):
+        """从配置文件加载设置"""
+        config = self.config_manager.get_config()
+        if not config:
+            logger.log("未发现配置文件，使用默认设置", LogLevel.INFO)
+            return
+
+        # 加载基本设置
+        self.is_dark_theme = config.get("is_dark_theme", self.is_dark_theme)
+        self.language = config.get("language", self.language)
+        self.enable_auto_update = config.get("enable_auto_update", self.enable_auto_update)
+
+        # 加载基础配置
+        self.domain = config.get("domain", self.domain)
+
+        # 加载邮箱选项配置
+        self.use_temp_mail = config.get("use_temp_mail", self.use_temp_mail)
+        self.use_imap = config.get("use_imap", self.use_imap)
+
+        # 加载临时邮箱配置
+        self.temp_mail = config.get("temp_mail", self.temp_mail)
+        self.temp_mail_epin = config.get("temp_mail_epin", self.temp_mail_epin)
+        self.temp_mail_ext = config.get("temp_mail_ext", self.temp_mail_ext)
+
+        # 加载IMAP配置
+        self.imap_server = config.get("imap_server", self.imap_server)
+        self.imap_port = config.get("imap_port", self.imap_port)
+        self.imap_user = config.get("imap_user", self.imap_user)
+        self.imap_pass = config.get("imap_pass", self.imap_pass)
+        self.imap_dir = config.get("imap_dir", self.imap_dir)
+
+        # 加载浏览器配置
+        self.browser_path = config.get("browser_path", self.browser_path)
+        self.browser_user_agent = config.get("browser_user_agent", self.browser_user_agent)
+        self.browser_headless = config.get("browser_headless", self.browser_headless)
+
+        # 加载网络设置
+        self.use_proxy = config.get("use_proxy", self.use_proxy)
+        self.proxy_address = config.get("proxy_address", self.proxy_address)
+        self.proxy_port = config.get("proxy_port", self.proxy_port)
+
+        # 加载日志级别设置
+        log_level_value = config.get("log_level")
+        if log_level_value is not None:
+            try:
+                self.log_level = LogLevel(log_level_value)
+            except ValueError:
+                self.log_level = LogLevel.INFO
+
+        logger.log("已从配置文件加载设置", LogLevel.INFO)
 
     def setup_ui(self):
         """设置UI界面"""
@@ -625,6 +690,7 @@ class SettingsPage(QWidget):
         self.theme_combo = QComboBox()
         self.theme_combo.addItem("浅色")
         self.theme_combo.addItem("深色")
+        self.theme_combo.setCurrentIndex(1 if self.is_dark_theme else 0)
         self.theme_combo.currentIndexChanged.connect(self.on_theme_changed)
 
         # 添加到水平布局
@@ -653,6 +719,8 @@ class SettingsPage(QWidget):
         self.language_combo = QComboBox()
         self.language_combo.addItem("中文")
         self.language_combo.addItem("English")
+        # 设置当前语言（如果不是中文或English，默认设置为中文）
+        self.language_combo.setCurrentIndex(1 if self.language == "English" else 0)
 
         # 添加到水平布局
         language_layout.addLayout(language_left, 1)  # 左侧占1份
@@ -720,7 +788,15 @@ class SettingsPage(QWidget):
         self.log_level_combo.addItem("信息", LogLevel.INFO)
         self.log_level_combo.addItem("警告", LogLevel.WARNING)
         self.log_level_combo.addItem("错误", LogLevel.ERROR)
-        self.log_level_combo.setCurrentIndex(1)  # 默认INFO级别
+
+        # 设置当前日志级别
+        current_log_level_index = 1  # 默认INFO级别
+        for i in range(self.log_level_combo.count()):
+            if self.log_level_combo.itemData(i) == self.log_level:
+                current_log_level_index = i
+                break
+        self.log_level_combo.setCurrentIndex(current_log_level_index)
+
         self.log_level_combo.currentIndexChanged.connect(self.on_log_level_changed)
 
         # 添加到水平布局
@@ -768,7 +844,7 @@ class SettingsPage(QWidget):
         proxy_form.setHorizontalSpacing(20)
         proxy_form.setVerticalSpacing(5)  # 减小表单项之间的间距
 
-        self.proxy_address_edit = QLineEdit()
+        self.proxy_address_edit = QLineEdit(self.proxy_address)
         self.proxy_address_edit.setPlaceholderText("例如：127.0.0.1")
         self.proxy_address_edit.setEnabled(self.use_proxy)
         proxy_form.addRow("地址:", self.proxy_address_edit)
@@ -1392,6 +1468,67 @@ class SettingsPage(QWidget):
         # 更新设置组的可见性
         self.imap_settings_group.setVisible(checked)
 
+    def create_themed_message_box(self, icon, title, text):
+        """创建一个与当前主题一致的消息框"""
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(text)
+        msg_box.setIcon(icon)
+
+        # 设置样式
+        if self.is_dark_theme:
+            # 深色主题样式
+            msg_box.setStyleSheet("""
+                QMessageBox {
+                    background-color: #2d2d2d;
+                    color: #e0e0e0;
+                }
+                QMessageBox QLabel {
+                    color: #e0e0e0;
+                }
+                QMessageBox QPushButton {
+                    background-color: #41cd52;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 6px 12px;
+                    min-width: 80px;
+                }
+                QMessageBox QPushButton:hover {
+                    background-color: #3dbd4e;
+                }
+                QMessageBox QPushButton:pressed {
+                    background-color: #38b049;
+                }
+            """)
+        else:
+            # 浅色主题样式
+            msg_box.setStyleSheet("""
+                QMessageBox {
+                    background-color: white;
+                    color: #333;
+                }
+                QMessageBox QLabel {
+                    color: #333;
+                }
+                QMessageBox QPushButton {
+                    background-color: #41cd52;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 6px 12px;
+                    min-width: 80px;
+                }
+                QMessageBox QPushButton:hover {
+                    background-color: #3dbd4e;
+                }
+                QMessageBox QPushButton:pressed {
+                    background-color: #38b049;
+                }
+            """)
+
+        return msg_box
+
     def save_settings(self):
         """保存设置"""
         # 收集基本设置
@@ -1429,10 +1566,58 @@ class SettingsPage(QWidget):
         self.proxy_port = self.proxy_port_spin.value() if hasattr(self, 'proxy_port_spin') else 8080
         self.log_level = self.log_level_combo.currentData() if hasattr(self, 'log_level_combo') else LogLevel.INFO
 
-        # 在这里可以将设置保存到配置文件
-        # TODO: 实现设置的持久化
+        # 创建配置字典
+        config = {
+            # 基本设置
+            "is_dark_theme": self.is_dark_theme,
+            "language": self.language,
+            "enable_auto_update": self.enable_auto_update,
 
-        logger.log("设置已保存", LogLevel.INFO)
+            # 基础配置
+            "domain": self.domain,
+
+            # 邮箱选项
+            "use_temp_mail": self.use_temp_mail,
+            "use_imap": self.use_imap,
+
+            # 临时邮箱配置
+            "temp_mail": self.temp_mail,
+            "temp_mail_epin": self.temp_mail_epin,
+            "temp_mail_ext": self.temp_mail_ext,
+
+            # IMAP配置
+            "imap_server": self.imap_server,
+            "imap_port": self.imap_port,
+            "imap_user": self.imap_user,
+            "imap_pass": self.imap_pass,
+            "imap_dir": self.imap_dir,
+            "imap_protocol": "IMAP",  # 默认使用IMAP协议
+
+            # 浏览器配置
+            "browser_path": self.browser_path,
+            "browser_user_agent": self.browser_user_agent,
+            "browser_headless": self.browser_headless,
+
+            # 网络设置
+            "use_proxy": self.use_proxy,
+            "proxy_address": self.proxy_address,
+            "proxy_port": self.proxy_port,
+
+            # 日志级别
+            "log_level": self.log_level.value
+        }
+
+        # 保存配置到文件
+        if self.config_manager.update_config(config):
+            logger.log("设置已成功保存到配置文件", LogLevel.INFO)
+            # 显示成功提示框
+            msg_box = self.create_themed_message_box(QMessageBox.Information, "保存成功", "设置已保存成功！")
+            msg_box.exec()
+        else:
+            logger.log("保存设置失败", LogLevel.ERROR)
+            # 显示错误提示框
+            msg_box = self.create_themed_message_box(QMessageBox.Critical, "保存失败", "设置保存失败，请重试！")
+            msg_box.exec()
 
     def reset_to_defaults(self):
         """重置为默认设置"""
@@ -1445,7 +1630,7 @@ class SettingsPage(QWidget):
             self.update_check.setChecked(True)  # 启用自动更新
 
         # 基础配置
-        self.domain_edit.setText("isctrl.me")
+        self.domain_edit.setText("xx.me")
 
         # 邮箱配置
         self.temp_mail_check.setChecked(False)
@@ -1458,7 +1643,7 @@ class SettingsPage(QWidget):
         self.imap_settings_group.setVisible(True)
 
         # 临时邮箱配置
-        self.temp_mail_edit.setText("isctrl@mailto.plus")
+        self.temp_mail_edit.setText("zz@mailto.plus")
         self.temp_mail_epin_edit.setText("")
         self.temp_mail_ext_edit.setText("@mailto.plus")
 
@@ -1488,6 +1673,10 @@ class SettingsPage(QWidget):
         self.save_settings()
 
         logger.log("设置已重置为默认值", LogLevel.INFO)
+
+        # 显示恢复默认设置成功提示
+        msg_box = self.create_themed_message_box(QMessageBox.Information, "恢复默认", "已将所有设置恢复为默认值！")
+        msg_box.exec()
 
     def toggle_imap_pass_visibility(self):
         """切换IMAP密码显示/隐藏状态"""

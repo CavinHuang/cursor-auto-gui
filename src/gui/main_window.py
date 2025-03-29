@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QFont
 from src.logic.log.log_manager import logger, LogLevel
+from src.logic.config.config_manager import ConfigManager
 # 导入页面模块
 from .pages.home import HomePage
 from .pages.settings import SettingsPage
@@ -13,8 +14,14 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # 主题状态
-        self.is_dark_theme = False
+        # 初始化配置管理器
+        self.config_manager = ConfigManager()
+
+        # 加载主题设置
+        config = self.config_manager.get_config()
+        self.is_dark_theme = config.get("is_dark_theme", False)
+
+        logger.log(f'配置中的主题设置: {"深色" if self.is_dark_theme else "浅色"}', LogLevel.INFO)
 
         # 设置窗口标题和大小
         self.setWindowTitle("Cursor Pro")
@@ -32,12 +39,12 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # 创建左侧菜单
-        self.left_menu = self.create_left_menu()
+        # 创建左侧菜单（传入主题信息）
+        self.left_menu = self.create_left_menu(is_dark=self.is_dark_theme)
         main_layout.addWidget(self.left_menu)
 
-        # 创建右侧内容区域
-        self.content_area = self.create_content_area()
+        # 创建右侧内容区域（传入主题信息）
+        self.content_area = self.create_content_area(is_dark=self.is_dark_theme)
         main_layout.addWidget(self.content_area)
 
         # 设置布局比例
@@ -50,11 +57,17 @@ class MainWindow(QMainWindow):
         # 记录启动日志
         logger.log("Cursor Pro 应用程序已启动", LogLevel.INFO)
 
-    def create_left_menu(self):
+    def create_left_menu(self, is_dark=False):
         """创建左侧菜单"""
         left_frame = QFrame()
         left_frame.setFixedWidth(200)  # 设置固定宽度
-        left_frame.setStyleSheet("background-color: #f4f4f4;")
+
+        # 根据主题设置不同的背景色
+        if is_dark:
+            left_frame.setStyleSheet("background-color: #333;")
+        else:
+            left_frame.setStyleSheet("background-color: #f4f4f4;")
+
         left_frame.setObjectName("leftMenu")
 
         layout = QVBoxLayout(left_frame)
@@ -78,23 +91,42 @@ class MainWindow(QMainWindow):
 
         # 主页按钮
         self.home_btn = QPushButton("  🏠  主页")
-        self.home_btn.setStyleSheet(
-            "QPushButton {"
-            "   background-color: transparent;"
-            "   color: #333;"
-            "   text-align: left;"
-            "   padding: 12px 15px;"
-            "   border-radius: 6px;"
-            "   font-size: 14px;"
-            "   font-weight: bold;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: rgba(65, 205, 82, 0.1);"
-            "}"
-            "QPushButton:pressed {"
-            "   background-color: rgba(65, 205, 82, 0.2);"
-            "}"
-        )
+        if is_dark:
+            self.home_btn.setStyleSheet(
+                "QPushButton {"
+                "   background-color: transparent;"
+                "   color: #f0f0f0;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "   font-weight: bold;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: rgba(65, 205, 82, 0.2);"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: rgba(65, 205, 82, 0.3);"
+                "}"
+            )
+        else:
+            self.home_btn.setStyleSheet(
+                "QPushButton {"
+                "   background-color: transparent;"
+                "   color: #333;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "   font-weight: bold;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: rgba(65, 205, 82, 0.1);"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: rgba(65, 205, 82, 0.2);"
+                "}"
+            )
         self.home_btn.clicked.connect(self.show_home_page)
         layout.addWidget(self.home_btn)
 
@@ -122,23 +154,42 @@ class MainWindow(QMainWindow):
 
         # 关于按钮
         self.about_btn = QPushButton("  ℹ️  关于")
-        self.about_btn.setStyleSheet(
-            "QPushButton {"
-            "   background-color: transparent;"
-            "   color: #333;"
-            "   text-align: left;"
-            "   padding: 12px 15px;"
-            "   border-radius: 6px;"
-            "   font-size: 14px;"
-            "   font-weight: bold;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: rgba(65, 205, 82, 0.1);"
-            "}"
-            "QPushButton:pressed {"
-            "   background-color: rgba(65, 205, 82, 0.2);"
-            "}"
-        )
+        if is_dark:
+            self.about_btn.setStyleSheet(
+                "QPushButton {"
+                "   background-color: transparent;"
+                "   color: #f0f0f0;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "   font-weight: bold;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: rgba(65, 205, 82, 0.2);"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: rgba(65, 205, 82, 0.3);"
+                "}"
+            )
+        else:
+            self.about_btn.setStyleSheet(
+                "QPushButton {"
+                "   background-color: transparent;"
+                "   color: #333;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "   font-weight: bold;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: rgba(65, 205, 82, 0.1);"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: rgba(65, 205, 82, 0.2);"
+                "}"
+            )
         self.about_btn.clicked.connect(self.show_about_page)
         layout.addWidget(self.about_btn)
 
@@ -148,23 +199,42 @@ class MainWindow(QMainWindow):
         layout.addWidget(spacer)
 
         # 主题切换按钮
-        self.theme_btn = QPushButton("  🌙  切换到深色主题")
-        self.theme_btn.setStyleSheet(
-            "QPushButton {"
-            "   background-color: transparent;"
-            "   color: #333;"
-            "   text-align: left;"
-            "   padding: 12px 15px;"
-            "   border-radius: 6px;"
-            "   font-size: 14px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: rgba(65, 205, 82, 0.1);"
-            "}"
-            "QPushButton:pressed {"
-            "   background-color: rgba(65, 205, 82, 0.2);"
-            "}"
-        )
+        if is_dark:
+            self.theme_btn = QPushButton("  ☀️  切换到浅色主题")
+            self.theme_btn.setStyleSheet(
+                "QPushButton {"
+                "   background-color: transparent;"
+                "   color: #f0f0f0;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: rgba(65, 205, 82, 0.2);"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: rgba(65, 205, 82, 0.3);"
+                "}"
+            )
+        else:
+            self.theme_btn = QPushButton("  🌙  切换到深色主题")
+            self.theme_btn.setStyleSheet(
+                "QPushButton {"
+                "   background-color: transparent;"
+                "   color: #333;"
+                "   text-align: left;"
+                "   padding: 12px 15px;"
+                "   border-radius: 6px;"
+                "   font-size: 14px;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: rgba(65, 205, 82, 0.1);"
+                "}"
+                "QPushButton:pressed {"
+                "   background-color: rgba(65, 205, 82, 0.2);"
+                "}"
+            )
         self.theme_btn.clicked.connect(self.toggle_theme)
         layout.addWidget(self.theme_btn)
 
@@ -176,10 +246,15 @@ class MainWindow(QMainWindow):
 
         return left_frame
 
-    def create_content_area(self):
+    def create_content_area(self, is_dark=False):
         """创建右侧内容区域"""
         content_frame = QFrame()
-        content_frame.setStyleSheet("background-color: white;")
+
+        # 根据主题设置不同的背景色
+        if is_dark:
+            content_frame.setStyleSheet("background-color: #222;")
+        else:
+            content_frame.setStyleSheet("background-color: white;")
 
         layout = QVBoxLayout(content_frame)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -190,16 +265,22 @@ class MainWindow(QMainWindow):
 
         # 创建主页
         self.home_page = HomePage()
+        # 设置主页主题
+        self.home_page.set_theme(is_dark)
         self.stacked_widget.addWidget(self.home_page)
 
         # 创建设置页
         self.settings_page = SettingsPage()
+        # 设置设置页面主题
+        self.settings_page.set_theme_state(is_dark)
         # 连接设置页的主题变更信号
         self.settings_page.theme_changed.connect(self.on_theme_changed)
         self.stacked_widget.addWidget(self.settings_page)
 
         # 创建关于页
         self.about_page = AboutPage()
+        # 设置关于页面主题
+        self.about_page.set_theme(is_dark)
         self.stacked_widget.addWidget(self.about_page)
 
         layout.addWidget(self.stacked_widget)
@@ -265,6 +346,9 @@ class MainWindow(QMainWindow):
             # 更新菜单按钮样式
             self.update_menu_button_styles(self.stacked_widget.currentIndex())
 
+            # 保存主题设置到配置文件
+            self.save_theme_setting(False)
+
     def set_dark_theme(self):
         """设置深色主题"""
         if not self.is_dark_theme:
@@ -309,6 +393,16 @@ class MainWindow(QMainWindow):
 
             # 更新菜单按钮样式
             self.update_menu_button_styles(self.stacked_widget.currentIndex())
+
+            # 保存主题设置到配置文件
+            self.save_theme_setting(True)
+
+    def save_theme_setting(self, is_dark):
+        """保存主题设置到配置文件"""
+        config = self.config_manager.get_config()
+        config["is_dark_theme"] = is_dark
+        self.config_manager.update_config(config)
+        logger.log(f"主题设置已保存: {'深色' if is_dark else '浅色'}", LogLevel.INFO)
 
     def show_home_page(self):
         """显示主页"""
