@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['main.py'],
+    ['launcher.py', 'main.py'],
     pathex=[],
     binaries=[],
-    datas=[('resources', 'resources')],
+    datas=[('resources', 'resources'), ('datas', 'datas')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -44,7 +44,7 @@ coll = COLLECT(
 )
 app = BUNDLE(
     coll,
-    name='CursorPro.app',
+    name='CursorPro-gui.app',
     icon=None,
     bundle_identifier=None,
 )
