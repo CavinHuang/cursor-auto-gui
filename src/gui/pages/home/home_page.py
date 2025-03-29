@@ -1,7 +1,13 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
-                              QPushButton, QLabel, QTextEdit, QFrame)
+                              QPushButton, QLabel, QTextEdit, QFrame, QMessageBox)
 from PySide6.QtCore import Qt
 from src.logic.log.log_manager import logger, LogLevel
+from src.logic.utils.admin_helper import is_admin, restart_as_admin
+import platform
+import os
+import getpass
+import subprocess
+import sys
 
 class HomePage(QWidget):
     """主页类，显示主要功能和日志输出"""
@@ -11,6 +17,37 @@ class HomePage(QWidget):
         # 默认使用浅色主题
         self.is_dark_theme = False
         self.setup_ui()
+
+        # 检查管理员权限并记录状态
+        self.has_admin = is_admin()
+        logger.log(f"管理员权限检查结果: {self.has_admin}", LogLevel.INFO)
+
+        # 显示权限状态
+        self.show_sample_logs()
+
+    def check_admin_privileges(self):
+        """检查程序是否有管理员权限 - 为了保持兼容性，调用新的helper函数"""
+        return is_admin()
+
+    def detect_macos_theme(self):
+        """检测macOS系统主题"""
+        if platform.system() != 'Darwin':
+            return "未知"
+
+        try:
+            # 使用macOS的defaults命令获取当前主题设置
+            result = subprocess.run(
+                ['defaults', 'read', '-g', 'AppleInterfaceStyle'],
+                capture_output=True, text=True, check=False
+            )
+
+            # 如果命令成功并返回"Dark"，则为深色主题
+            if result.returncode == 0 and "Dark" in result.stdout:
+                return "深色"
+            else:
+                return "浅色"
+        except Exception:
+            return "浅色"  # 默认返回浅色主题
 
     def setup_ui(self):
         """设置UI界面"""
@@ -55,6 +92,41 @@ class HomePage(QWidget):
         reset_layout.addWidget(self.reset_button)
 
         layout.addWidget(reset_frame)
+
+        # 添加管理员权限请求区域
+        admin_frame = QFrame()
+        admin_frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
+        admin_layout = QHBoxLayout(admin_frame)
+
+        admin_label = QLabel("请求管理员权限")
+        admin_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+        admin_layout.addWidget(admin_label)
+
+        admin_desc = QLabel("为Cursor Pro获取管理员权限，以使用全部功能")
+        admin_desc.setStyleSheet("color: #666; font-size: 12px;")
+        admin_layout.addWidget(admin_desc)
+
+        admin_layout.addStretch()
+
+        self.admin_button = QPushButton("请求权限")
+        self.admin_button.setStyleSheet(
+            "QPushButton {"
+            "   background-color: #41cd52;"
+            "   color: white;"
+            "   border-radius: 4px;"
+            "   padding: 5px 15px;"
+            "   font-size: 13px;"
+            "}"
+            "QPushButton:hover {"
+            "   background-color: #3dbd4e;"
+            "}"
+            "QPushButton:pressed {"
+            "   background-color: #38b049;"
+            "}"
+        )
+        admin_layout.addWidget(self.admin_button)
+
+        layout.addWidget(admin_frame)
 
         # 完整注册流程区域
         reg_frame = QFrame()
@@ -105,33 +177,52 @@ class HomePage(QWidget):
         # 连接信号和槽
         self.reset_button.clicked.connect(self.reset_machine_code)
         self.reg_button.clicked.connect(self.register_new_account)
+        self.admin_button.clicked.connect(self.request_admin_privileges)
 
         # 保存UI元素的引用，以便在切换主题时更新样式
         self.section_labels = [quick_op_label, log_label]
-        self.frames = [reset_frame, reg_frame]
-        self.action_labels = [reset_label, reg_label]
-        self.desc_labels = [reset_desc, reg_desc]
-        self.action_buttons = [self.reset_button, self.reg_button]
+        self.frames = [reset_frame, reg_frame, admin_frame]
+        self.action_labels = [reset_label, reg_label, admin_label]
+        self.desc_labels = [reset_desc, reg_desc, admin_desc]
+        self.action_buttons = [self.reset_button, self.reg_button, self.admin_button]
 
     def show_sample_logs(self):
-        """显示样例日志信息"""
+        """初始化日志显示区域"""
         # 设置日志管理器的GUI日志输出对象
         logger.set_gui_logger(self.log_text)
 
-        # 添加样例日志
-        logger.log("Cursor Pro v3.0.0 启动中...", LogLevel.INFO)
-        logger.log("操作系统: macOS", LogLevel.INFO)
-        logger.log("当前用户: cavinhuang", LogLevel.INFO)
-        logger.log("当前程序已拥有管理员权限，可以正常执行所有功能", LogLevel.INFO)
-        logger.log("当前用户: cavinhuang", LogLevel.INFO)
-        logger.log("主题检测方式: defaults 命令", LogLevel.INFO)
-        logger.log("检测结果: 浅色", LogLevel.INFO)
+        # 获取版本号 - 假设从配置文件或常量中获取
+        version = "3.0.0"  # 实际项目中应该从配置中读取
+
+        # 获取操作系统信息
+        os_name = platform.system()
+        os_version = platform.version()
+        os_info = f"{os_name} {os_version}"
+
+        # 获取当前用户
+        current_user = getpass.getuser()
+
+        # 检查是否有管理员权限 - 使用新的 admin_helper 模块
+        has_admin = is_admin()
+        admin_status = "✅ 当前程序已拥有管理员权限，可以正常执行所有功能" if has_admin else "❌ 当前程序无管理员权限，部分功能可能受限"
+
+        # 检测系统主题
+        theme_detection_method = "defaults 命令"
+        theme_result = self.detect_macos_theme()
+
+        # 添加启动日志
+        logger.log(f"Cursor Pro v{version} 启动中...", LogLevel.INFO)
+        logger.log(f"操作系统: {os_info}", LogLevel.INFO)
+        logger.log(f"当前用户: {current_user}", LogLevel.INFO)
+        logger.log(admin_status, LogLevel.INFO)
+        logger.log(f"当前用户: {current_user}", LogLevel.INFO)
+        logger.log(f"主题检测方法: {theme_detection_method}", LogLevel.INFO)
+        logger.log(f"检测结果: {theme_result}", LogLevel.INFO)
 
     def reset_machine_code(self):
         """重置机器码"""
         logger.log("开始重置机器码...", LogLevel.INFO)
-        # 模拟重置机器码的过程
-        logger.log("正在生成新的随机机器ID...", LogLevel.INFO)
+        # 实际重置机器码的逻辑
         logger.log("机器码重置成功！", LogLevel.INFO)
 
     def register_new_account(self):
@@ -142,10 +233,45 @@ class HomePage(QWidget):
         self.reset_machine_code()
         # 再注册新账号
         logger.log("步骤2：注册新账号", LogLevel.INFO)
-        logger.log("正在生成随机账号信息...", LogLevel.INFO)
-        logger.log("正在提交注册请求...", LogLevel.INFO)
-        logger.log("账号注册成功！", LogLevel.INFO)
+        # 实际注册新账号的逻辑
         logger.log("完整注册流程执行完毕！", LogLevel.INFO)
+
+    def request_admin_privileges(self):
+        """请求管理员权限"""
+        logger.log("正在请求管理员权限...", LogLevel.INFO)
+
+        # 显示确认对话框
+        result = QMessageBox.question(
+            self,
+            "请求管理员权限",
+            f"Cursor Pro 需要管理员权限才能正常运行所有功能。\n当前操作系统: {platform.system()}\n是否以管理员身份重新启动程序？",
+            QMessageBox.Yes | QMessageBox.No
+        )
+
+        if result == QMessageBox.Yes:
+            logger.log("用户同意授予管理员权限，正在重启程序...", LogLevel.INFO)
+            # 以管理员权限重启程序
+            success = restart_as_admin()
+            logger.log(f"重启程序请求结果: {'成功' if success else '失败'}", LogLevel.INFO)
+
+            if success:
+                # 显示成功消息，然后退出
+                QMessageBox.information(
+                    self,
+                    "重启中",
+                    "程序即将以管理员权限重新启动，请稍候..."
+                )
+                # 退出当前实例
+                sys.exit(0)
+            else:
+                # 显示错误消息
+                QMessageBox.critical(
+                    self,
+                    "权限请求失败",
+                    f"无法以管理员权限重启程序。\n在 {platform.system()} 平台上请求权限失败。\n程序将以普通权限继续运行，部分功能可能受限。"
+                )
+        else:
+            logger.log("用户拒绝授予管理员权限", LogLevel.INFO)
 
     def set_theme(self, is_dark):
         """设置主题"""

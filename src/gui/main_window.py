@@ -1,10 +1,13 @@
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                                 QHBoxLayout, QPushButton, QLabel, QTextEdit,
-                                QFrame, QStackedWidget, QScrollArea, QSizePolicy)
+                                QFrame, QStackedWidget, QScrollArea, QSizePolicy,
+                                QMessageBox)
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QFont
 from src.logic.log.log_manager import logger, LogLevel
 from src.logic.config.config_manager import ConfigManager
+from src.logic.utils.admin_helper import is_admin, restart_as_admin
+import sys
 # 导入页面模块
 from .pages.home import HomePage
 from .pages.settings import SettingsPage
@@ -20,8 +23,6 @@ class MainWindow(QMainWindow):
         # 加载主题设置
         config = self.config_manager.get_config()
         self.is_dark_theme = config.get("is_dark_theme", False)
-
-        logger.log(f'配置中的主题设置: {"深色" if self.is_dark_theme else "浅色"}', LogLevel.INFO)
 
         # 设置窗口标题和大小
         self.setWindowTitle("Cursor Pro")
@@ -53,9 +54,6 @@ class MainWindow(QMainWindow):
 
         # 默认显示主页
         self.show_home_page()
-
-        # 记录启动日志
-        logger.log("Cursor Pro 应用程序已启动", LogLevel.INFO)
 
     def create_left_menu(self, is_dark=False):
         """创建左侧菜单"""
@@ -304,7 +302,6 @@ class MainWindow(QMainWindow):
     def set_light_theme(self):
         """设置浅色主题"""
         if self.is_dark_theme:
-            logger.log("切换到浅色主题", LogLevel.INFO)
             self.is_dark_theme = False
 
             # 更新设置页面的主题状态
@@ -352,7 +349,6 @@ class MainWindow(QMainWindow):
     def set_dark_theme(self):
         """设置深色主题"""
         if not self.is_dark_theme:
-            logger.log("切换到深色主题", LogLevel.INFO)
             self.is_dark_theme = True
 
             # 更新设置页面的主题状态
@@ -402,12 +398,11 @@ class MainWindow(QMainWindow):
         config = self.config_manager.get_config()
         config["is_dark_theme"] = is_dark
         self.config_manager.update_config(config)
-        logger.log(f"主题设置已保存: {'深色' if is_dark else '浅色'}", LogLevel.INFO)
 
     def show_home_page(self):
         """显示主页"""
         self.stacked_widget.setCurrentIndex(0)
-        # 显示样例日志
+        # 初始化日志显示区域
         self.home_page.show_sample_logs()
         # 更新按钮样式
         self.update_menu_button_styles(0)
