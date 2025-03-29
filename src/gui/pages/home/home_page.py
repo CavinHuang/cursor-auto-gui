@@ -22,8 +22,8 @@ class HomePage(QWidget):
         self.has_admin = is_admin()
         logger.log(f"管理员权限检查结果: {self.has_admin}", LogLevel.INFO)
 
-        # 显示权限状态
-        self.show_sample_logs()
+        # 立即应用浅色主题样式
+        self.apply_theme_styles()
 
     def check_admin_privileges(self):
         """检查程序是否有管理员权限 - 为了保持兼容性，调用新的helper函数"""
@@ -60,7 +60,13 @@ class HomePage(QWidget):
 
         # 重置机器码区域
         reset_frame = QFrame()
-        reset_frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
+        reset_frame.setStyleSheet("""
+            background-color: #ffffff;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        """)
         reset_layout = QHBoxLayout(reset_frame)
 
         reset_label = QLabel("重置机器码")
@@ -81,12 +87,16 @@ class HomePage(QWidget):
             "   border-radius: 4px;"
             "   padding: 5px 15px;"
             "   font-size: 13px;"
+            "   border: none;"
+            "   box-shadow: 0 1px 3px rgba(65, 205, 82, 0.3);"
             "}"
             "QPushButton:hover {"
             "   background-color: #3dbd4e;"
+            "   box-shadow: 0 2px 5px rgba(65, 205, 82, 0.4);"
             "}"
             "QPushButton:pressed {"
             "   background-color: #38b049;"
+            "   box-shadow: 0 1px 2px rgba(65, 205, 82, 0.2);"
             "}"
         )
         reset_layout.addWidget(self.reset_button)
@@ -95,7 +105,14 @@ class HomePage(QWidget):
 
         # 完整注册流程区域
         reg_frame = QFrame()
-        reg_frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
+        reg_frame.setStyleSheet("""
+            background-color: #ffffff;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            margin-top: 10px;
+        """)
         reg_layout = QHBoxLayout(reg_frame)
 
         reg_label = QLabel("完整注册流程")
@@ -116,12 +133,16 @@ class HomePage(QWidget):
             "   border-radius: 4px;"
             "   padding: 5px 15px;"
             "   font-size: 13px;"
+            "   border: none;"
+            "   box-shadow: 0 1px 3px rgba(65, 205, 82, 0.3);"
             "}"
             "QPushButton:hover {"
             "   background-color: #3dbd4e;"
+            "   box-shadow: 0 2px 5px rgba(65, 205, 82, 0.4);"
             "}"
             "QPushButton:pressed {"
             "   background-color: #38b049;"
+            "   box-shadow: 0 1px 2px rgba(65, 205, 82, 0.2);"
             "}"
         )
         reg_layout.addWidget(self.reg_button)
@@ -135,7 +156,16 @@ class HomePage(QWidget):
 
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px; font-family: 'Courier New';")
+        self.log_text.setAcceptRichText(True)
+        self.log_text.setStyleSheet("""
+            background-color: #fafafa;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: 'Courier New';
+            color: #333333;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+        """)
         self.log_text.setMinimumHeight(200)
         layout.addWidget(self.log_text)
 
@@ -202,9 +232,14 @@ class HomePage(QWidget):
 
     def set_theme(self, is_dark):
         """设置主题"""
-        if self.is_dark_theme != is_dark:
-            self.is_dark_theme = is_dark
-            self.apply_theme_styles()
+        # 更新主题状态标志
+        self.is_dark_theme = is_dark
+
+        # 更新日志管理器的主题设置
+        logger.set_dark_theme(is_dark)
+
+        # 立即应用相应的主题样式
+        self.apply_theme_styles()
 
     def apply_theme_styles(self):
         """应用主题样式"""
@@ -218,7 +253,7 @@ class HomePage(QWidget):
 
             # 更新框架样式
             for frame in self.frames:
-                frame.setStyleSheet("border: 1px solid #444; border-radius: 4px; padding: 10px; background-color: #333;")
+                frame.setStyleSheet("border: 1px solid #444; border-radius: 6px; padding: 10px; background-color: #333; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);")
 
             # 更新操作标签样式
             for label in self.action_labels:
@@ -237,40 +272,51 @@ class HomePage(QWidget):
                     "   border-radius: 4px;"
                     "   padding: 5px 15px;"
                     "   font-size: 13px;"
+                    "   border: none;"
+                    "   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);"
                     "}"
                     "QPushButton:hover {"
                     "   background-color: #3dbd4e;"
+                    "   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);"
                     "}"
                     "QPushButton:pressed {"
                     "   background-color: #38b049;"
+                    "   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);"
                     "}"
                 )
 
             # 更新日志文本区域样式
             self.log_text.setStyleSheet(
                 "border: 1px solid #444; "
-                "border-radius: 4px; "
+                "border-radius: 6px; "
                 "padding: 10px; "
                 "font-family: 'Courier New'; "
                 "background-color: #2d2d2d; "
                 "color: #e0e0e0;"
+                "box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);"
             )
 
         else:
-            # 浅色主题样式
+            # 确保浅色主题样式被正确应用
             self.setStyleSheet("background-color: white;")
 
             # 更新区域标题样式
             for label in self.section_labels:
-                label.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
+                label.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333;")
 
             # 更新框架样式
             for frame in self.frames:
-                frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
+                frame.setStyleSheet("""
+                    background-color: #ffffff;
+                    border: 1px solid #e8e8e8;
+                    border-radius: 6px;
+                    padding: 10px;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                """)
 
             # 更新操作标签样式
             for label in self.action_labels:
-                label.setStyleSheet("font-size: 14px; font-weight: bold;")
+                label.setStyleSheet("font-size: 14px; font-weight: bold; color: #333;")
 
             # 更新描述标签样式
             for label in self.desc_labels:
@@ -285,19 +331,26 @@ class HomePage(QWidget):
                     "   border-radius: 4px;"
                     "   padding: 5px 15px;"
                     "   font-size: 13px;"
+                    "   border: none;"
+                    "   box-shadow: 0 1px 3px rgba(65, 205, 82, 0.3);"
                     "}"
                     "QPushButton:hover {"
                     "   background-color: #3dbd4e;"
+                    "   box-shadow: 0 2px 5px rgba(65, 205, 82, 0.4);"
                     "}"
                     "QPushButton:pressed {"
                     "   background-color: #38b049;"
+                    "   box-shadow: 0 1px 2px rgba(65, 205, 82, 0.2);"
                     "}"
                 )
 
             # 更新日志文本区域样式
-            self.log_text.setStyleSheet(
-                "border: 1px solid #ddd; "
-                "border-radius: 4px; "
-                "padding: 10px; "
-                "font-family: 'Courier New';"
-            )
+            self.log_text.setStyleSheet("""
+                background-color: #fafafa;
+                border: 1px solid #e8e8e8;
+                border-radius: 6px;
+                padding: 10px;
+                font-family: 'Courier New';
+                color: #333333;
+                box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            """)

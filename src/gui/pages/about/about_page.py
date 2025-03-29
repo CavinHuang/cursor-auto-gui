@@ -141,13 +141,18 @@ class AboutPage(QWidget):
     def create_section_frame(self, title):
         """创建带标题的区域框架"""
         frame = QFrame()
-        frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; background-color: transparent;")
+        frame.setStyleSheet("""
+            background-color: #ffffff;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        """)
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(15, 15, 15, 15)
         layout.setSpacing(8)
 
         title_label = QLabel(title)
-        title_label.setStyleSheet("font-size: 15px; font-weight: bold; border: none; background-color: transparent;")
+        title_label.setStyleSheet("font-size: 15px; font-weight: bold; color: #333; border: none; background-color: transparent;")
         layout.addWidget(title_label)
 
         return frame
@@ -157,7 +162,7 @@ class AboutPage(QWidget):
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.HLine)
         separator.setFrameShadow(QFrame.Shadow.Sunken)
-        separator.setStyleSheet("background-color: #e5e5e5; margin: 8px 0; border: none;")
+        separator.setStyleSheet("background-color: #eeeeee; margin: 8px 0; border: none;")
         layout.addWidget(separator)
 
     def set_theme(self, is_dark):
@@ -174,7 +179,7 @@ class AboutPage(QWidget):
 
             # 更新框架样式
             for frame in self.frames:
-                frame.setStyleSheet("border: 1px solid #444; border-radius: 4px; background-color: transparent;")
+                frame.setStyleSheet("border: 1px solid #444; border-radius: 8px; background-color: #333; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);")
 
             # 更新容器样式
             for container in self.containers:
@@ -210,7 +215,12 @@ class AboutPage(QWidget):
 
             # 更新框架样式
             for frame in self.frames:
-                frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; background-color: transparent;")
+                frame.setStyleSheet("""
+                    background-color: #ffffff;
+                    border: 1px solid #e8e8e8;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                """)
 
             # 更新容器样式
             for container in self.containers:
@@ -218,21 +228,21 @@ class AboutPage(QWidget):
 
             # 更新标题样式
             for title in self.titles:
-                title.setStyleSheet("font-size: 14px; font-weight: bold; border: none; background-color: transparent;")
+                title.setStyleSheet("font-size: 14px; font-weight: bold; color: #333; border: none; background-color: transparent;")
 
             # 更新描述文本样式
             for desc in self.descriptions:
                 desc.setStyleSheet("font-size: 13px; color: #555; border: none; background-color: transparent;")
 
             # 更新特殊标签样式
-            self.special_labels[0].setStyleSheet("font-size: 15px; padding: 5px 0; border: none; background-color: transparent;")  # version_label
+            self.special_labels[0].setStyleSheet("font-size: 15px; color: #333; padding: 5px 0; border: none; background-color: transparent;")  # version_label
             self.special_labels[1].setStyleSheet("font-size: 15px; color: #4CAF50; padding: 5px 0; border: none; background-color: transparent;")  # wechat_label
             self.special_labels[2].setStyleSheet("font-size: 13px; color: #4CAF50; border: none; background-color: transparent;")  # config_path_label
 
             # 更新分隔线样式
             for separator in self.findChildren(QFrame):
                 if separator.frameShape() == QFrame.Shape.HLine:
-                    separator.setStyleSheet("background-color: #e5e5e5; margin: 8px 0; border: none;")
+                    separator.setStyleSheet("background-color: #eeeeee; margin: 8px 0; border: none;")
 
             # 更新所有标题标签
             for frame in self.frames:

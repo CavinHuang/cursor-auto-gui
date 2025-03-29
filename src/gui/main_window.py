@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
         main_layout.setStretch(0, 1)  # 左侧菜单
         main_layout.setStretch(1, 4)  # 右侧内容
 
-        # 默认显示主页
+        # 默认显示主页并初始化日志
         self.show_home_page()
 
     def create_left_menu(self, is_dark=False):
@@ -64,7 +64,10 @@ class MainWindow(QMainWindow):
         if is_dark:
             left_frame.setStyleSheet("background-color: #333;")
         else:
-            left_frame.setStyleSheet("background-color: #f4f4f4;")
+            left_frame.setStyleSheet("""
+                background-color: #f8f9fa;
+                border-right: 1px solid #e6e6e6;
+            """)
 
         left_frame.setObjectName("leftMenu")
 
@@ -117,12 +120,15 @@ class MainWindow(QMainWindow):
                 "   border-radius: 6px;"
                 "   font-size: 14px;"
                 "   font-weight: bold;"
+                "   border: none;"
                 "}"
                 "QPushButton:hover {"
                 "   background-color: rgba(65, 205, 82, 0.1);"
+                "   border: none;"
                 "}"
                 "QPushButton:pressed {"
-                "   background-color: rgba(65, 205, 82, 0.2);"
+                "   background-color: rgba(65, 205, 82, 0.15);"
+                "   border: none;"
                 "}"
             )
         self.home_btn.clicked.connect(self.show_home_page)
@@ -139,12 +145,16 @@ class MainWindow(QMainWindow):
             "   border-radius: 6px;"
             "   font-size: 14px;"
             "   font-weight: bold;"
+            "   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);"
+            "   border: none;"
             "}"
             "QPushButton:hover {"
             "   background-color: #3dbd4e;"
+            "   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);"
             "}"
             "QPushButton:pressed {"
             "   background-color: #38b049;"
+            "   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);"
             "}"
         )
         self.settings_btn.clicked.connect(self.show_settings_page)
@@ -180,12 +190,15 @@ class MainWindow(QMainWindow):
                 "   border-radius: 6px;"
                 "   font-size: 14px;"
                 "   font-weight: bold;"
+                "   border: none;"
                 "}"
                 "QPushButton:hover {"
                 "   background-color: rgba(65, 205, 82, 0.1);"
+                "   border: none;"
                 "}"
                 "QPushButton:pressed {"
-                "   background-color: rgba(65, 205, 82, 0.2);"
+                "   background-color: rgba(65, 205, 82, 0.15);"
+                "   border: none;"
                 "}"
             )
         self.about_btn.clicked.connect(self.show_about_page)
@@ -225,12 +238,15 @@ class MainWindow(QMainWindow):
                 "   padding: 12px 15px;"
                 "   border-radius: 6px;"
                 "   font-size: 14px;"
+                "   border: none;"
                 "}"
                 "QPushButton:hover {"
                 "   background-color: rgba(65, 205, 82, 0.1);"
+                "   border: none;"
                 "}"
                 "QPushButton:pressed {"
-                "   background-color: rgba(65, 205, 82, 0.2);"
+                "   background-color: rgba(65, 205, 82, 0.15);"
+                "   border: none;"
                 "}"
             )
         self.theme_btn.clicked.connect(self.toggle_theme)
@@ -252,8 +268,12 @@ class MainWindow(QMainWindow):
         if is_dark:
             content_frame.setStyleSheet("background-color: #222;")
         else:
-            content_frame.setStyleSheet("background-color: white;")
+            content_frame.setStyleSheet("""
+                background-color: #ffffff;
+                border-left: 1px solid #f0f0f0;
+            """)
 
+        # 创建布局
         layout = QVBoxLayout(content_frame)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(10)
@@ -281,6 +301,10 @@ class MainWindow(QMainWindow):
         self.about_page.set_theme(is_dark)
         self.stacked_widget.addWidget(self.about_page)
 
+        # 设置主页为默认显示页面
+        self.stacked_widget.setCurrentIndex(0)
+
+        # 添加堆叠窗口部件到布局
         layout.addWidget(self.stacked_widget)
 
         return content_frame
@@ -317,7 +341,10 @@ class MainWindow(QMainWindow):
             self.theme_btn.setText("  🌙  切换到深色主题")
 
             # 更新左侧菜单样式
-            self.left_menu.setStyleSheet("background-color: #f4f4f4;")
+            self.left_menu.setStyleSheet("""
+                background-color: #f8f9fa;
+                border-right: 1px solid #e6e6e6;
+            """)
 
             # 更新主题切换按钮样式
             self.theme_btn.setStyleSheet(
@@ -328,19 +355,25 @@ class MainWindow(QMainWindow):
                 "   padding: 12px 15px;"
                 "   border-radius: 6px;"
                 "   font-size: 14px;"
+                "   border: none;"
                 "}"
                 "QPushButton:hover {"
                 "   background-color: rgba(65, 205, 82, 0.1);"
+                "   border: none;"
                 "}"
                 "QPushButton:pressed {"
-                "   background-color: rgba(65, 205, 82, 0.2);"
+                "   background-color: rgba(65, 205, 82, 0.15);"
+                "   border: none;"
                 "}"
             )
 
             # 更新内容区域样式
-            self.content_area.setStyleSheet("background-color: white;")
+            self.content_area.setStyleSheet("""
+                background-color: #ffffff;
+                border-left: 1px solid #f0f0f0;
+            """)
 
-            # 更新菜单按钮样式
+            # 重新应用菜单按钮样式，确保当前页面按钮显示正确
             self.update_menu_button_styles(self.stacked_widget.currentIndex())
 
             # 保存主题设置到配置文件
@@ -387,7 +420,7 @@ class MainWindow(QMainWindow):
             # 更新内容区域样式
             self.content_area.setStyleSheet("background-color: #222;")
 
-            # 更新菜单按钮样式
+            # 重新应用菜单按钮样式，确保当前页面按钮显示正确
             self.update_menu_button_styles(self.stacked_widget.currentIndex())
 
             # 保存主题设置到配置文件
@@ -401,23 +434,26 @@ class MainWindow(QMainWindow):
 
     def show_home_page(self):
         """显示主页"""
+        # 更新按钮样式
+        self.update_menu_button_styles(0)
+        # 切换到主页
         self.stacked_widget.setCurrentIndex(0)
         # 初始化日志显示区域
         self.home_page.show_sample_logs()
-        # 更新按钮样式
-        self.update_menu_button_styles(0)
 
     def show_settings_page(self):
         """显示设置页"""
-        self.stacked_widget.setCurrentIndex(1)
         # 更新按钮样式
         self.update_menu_button_styles(1)
+        # 切换到设置页
+        self.stacked_widget.setCurrentIndex(1)
 
     def show_about_page(self):
         """显示关于页"""
-        self.stacked_widget.setCurrentIndex(2)
         # 更新按钮样式
         self.update_menu_button_styles(2)
+        # 切换到关于页
+        self.stacked_widget.setCurrentIndex(2)
 
     def update_menu_button_styles(self, active_index):
         """更新菜单按钮样式"""
@@ -469,12 +505,15 @@ class MainWindow(QMainWindow):
                 "   border-radius: 6px;"
                 "   font-size: 14px;"
                 "   font-weight: bold;"
+                "   border: none;"
                 "}"
                 "QPushButton:hover {"
                 "   background-color: rgba(65, 205, 82, 0.1);"
+                "   border: none;"
                 "}"
                 "QPushButton:pressed {"
-                "   background-color: rgba(65, 205, 82, 0.2);"
+                "   background-color: rgba(65, 205, 82, 0.15);"
+                "   border: none;"
                 "}"
             )
             active_style = (
@@ -486,12 +525,16 @@ class MainWindow(QMainWindow):
                 "   border-radius: 6px;"
                 "   font-size: 14px;"
                 "   font-weight: bold;"
+                "   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);"
+                "   border: none;"
                 "}"
                 "QPushButton:hover {"
                 "   background-color: #3dbd4e;"
+                "   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);"
                 "}"
                 "QPushButton:pressed {"
                 "   background-color: #38b049;"
+                "   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);"
                 "}"
             )
 

@@ -134,8 +134,8 @@ class SettingsPage(QWidget):
         # 设置滚动条样式
         scroll_area.setStyleSheet("""
             QScrollBar:vertical {
-                background: transparent;
-                width: 3px;
+                background: #f5f5f5;
+                width: 6px;
                 margin: 0px;
             }
             QScrollBar::handle:vertical {
@@ -1199,10 +1199,11 @@ class SettingsPage(QWidget):
                 QGroupBox {
                     border: 1px solid #e0e0e0;
                     border-radius: 8px;
-                    background-color: transparent;  /* 设置为透明 */
+                    background-color: #ffffff;
                     margin-top: 0px;
                     padding-top: 25px;
                     font-weight: normal;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
                 }
 
                 QGroupBox::title {
@@ -1211,14 +1212,18 @@ class SettingsPage(QWidget):
                     top: 8px;
                     padding: 0px 5px;
                     background-color: transparent;
+                    color: #333;
+                    font-weight: bold;
                 }
 
                 QLabel {
                     font-weight: normal;
+                    color: #333;
                 }
 
                 QCheckBox {
                     spacing: 5px;
+                    color: #333;
                 }
 
                 QCheckBox::indicator, QRadioButton::indicator {
@@ -1253,6 +1258,7 @@ class SettingsPage(QWidget):
                     background: white;
                     selection-background-color: #41cd52;
                     min-height: 20px;
+                    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
                 }
 
                 QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
@@ -1263,6 +1269,10 @@ class SettingsPage(QWidget):
                     border-radius: 6px;
                     padding: 8px 16px;
                     font-size: 13px;
+                }
+
+                QComboBox {
+                    background: linear-gradient(to bottom, #ffffff, #f8f8f8);
                 }
 
                 QComboBox::drop-down {
@@ -1318,12 +1328,15 @@ class SettingsPage(QWidget):
                 "   border: 1px solid #d0d0d0;"
                 "   border-radius: 6px;"
                 "   padding: 8px 16px;"
+                "   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);"
                 "}"
                 "QPushButton:hover {"
                 "   background-color: #e0e0e0;"
+                "   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);"
                 "}"
                 "QPushButton:pressed {"
                 "   background-color: #d0d0d0;"
+                "   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);"
                 "}"
             )
 
@@ -1335,12 +1348,15 @@ class SettingsPage(QWidget):
                 "   border: none;"
                 "   border-radius: 6px;"
                 "   padding: 8px 16px;"
+                "   box-shadow: 0 1px 3px rgba(65, 205, 82, 0.3);"
                 "}"
                 "QPushButton:hover {"
                 "   background-color: #3dbd4e;"
+                "   box-shadow: 0 2px 5px rgba(65, 205, 82, 0.4);"
                 "}"
                 "QPushButton:pressed {"
                 "   background-color: #38b049;"
+                "   box-shadow: 0 1px 2px rgba(65, 205, 82, 0.2);"
                 "}"
             )
 
@@ -1386,6 +1402,7 @@ class SettingsPage(QWidget):
                     selection-background-color: #41cd52;
                     min-height: 20px;
                     padding-right: 0px;
+                    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
                 }
                 QLineEdit:focus {
                     border: 1px solid #41cd52;
@@ -1403,6 +1420,7 @@ class SettingsPage(QWidget):
                     selection-background-color: #41cd52;
                     min-height: 20px;
                     padding-right: 0px;
+                    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
                 }
                 QLineEdit:focus {
                     border: 1px solid #41cd52;
