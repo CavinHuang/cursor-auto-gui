@@ -72,10 +72,6 @@ def build_macos_arm64():
             '--noupx',
             '--add-data=resources:resources',
             '--add-binary=main.py:.',  # 确保main.py被正确添加为二进制文件
-            '--add-binary=install.py:.',  # 添加安装脚本
-            '--add-binary=launcher.py:.',  # 添加启动器脚本
-            '--add-binary=bootstrap.py:.',  # 添加引导脚本
-            '--add-binary=direct_launcher.py:.',  # 添加直接启动脚本
             '--icon=resources/icon.icns',  # 添加图标
             'launcher.py'  # 使用launcher.py作为主入口点
         ])
@@ -99,13 +95,8 @@ def build_macos_arm64():
             '--clean',
             '--noupx',
             '--add-data=resources:resources',
-            '--add-binary=main.py:.',  # 确保main.py被正确添加为二进制文件
-            '--add-binary=install.py:.',  # 添加安装脚本
-            '--add-binary=launcher.py:.',  # 添加启动器脚本
-            '--add-binary=bootstrap.py:.',  # 添加引导脚本
-            '--add-binary=direct_launcher.py:.',  # 添加直接启动脚本
             '--icon=resources/icon.icns',  # 添加图标
-            'launcher.py'  # 使用launcher.py作为主入口点
+            'main.py'  # 使用launcher.py作为主入口点
         ])
 
     # 确保输出目录存在
@@ -179,9 +170,6 @@ def build_macos_arm64():
                         f.seek(0)
                         f.write(new_content)
                         f.truncate()
-
-    # 创建安装脚本
-    create_macos_installer()
 
     # 创建DMG文件
     create_macos_dmg()
@@ -282,62 +270,6 @@ def create_default_icon(icon_path):
     with open(icon_path, 'wb') as f:
         f.write(b'')
     print(f"创建了空图标文件: {icon_path}")
-
-def create_macos_installer():
-    """创建macOS PKG安装包"""
-    print("创建macOS PKG安装包...")
-
-    # 创建安装脚本目录
-    installer_dir = 'dist/installer'
-    if os.path.exists(installer_dir):
-        shutil.rmtree(installer_dir)
-    os.makedirs(installer_dir)
-
-    # 创建postinstall脚本
-    scripts_dir = os.path.join(installer_dir, 'scripts')
-    os.makedirs(scripts_dir)
-
-    postinstall_path = os.path.join(scripts_dir, 'postinstall')
-    with open(postinstall_path, 'w') as f:
-        f.write('''#!/bin/bash
-# 设置应用程序权限
-chmod -R 755 "/Applications/CursorPro.app"
-
-# 创建快捷方式到应用程序目录
-mkdir -p "/usr/local/bin"
-ln -sf "/Applications/CursorPro.app/Contents/MacOS/CursorPro" "/usr/local/bin/cursorpro"
-
-# 注册文件类型关联
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/CursorPro.app"
-
-# 刷新图标缓存
-touch "/Applications/CursorPro.app"
-touch "/Applications"
-
-echo "CursorPro安装完成！"
-exit 0
-''')
-
-    # 设置脚本可执行权限
-    os.chmod(postinstall_path, 0o755)
-
-    # 复制应用到临时目录
-    app_temp_dir = os.path.join(installer_dir, 'app')
-    os.makedirs(app_temp_dir)
-    shutil.copytree('dist/CursorPro.app', os.path.join(app_temp_dir, 'CursorPro.app'))
-
-    # 使用pkgbuild创建安装包
-    subprocess.check_call([
-        'pkgbuild',
-        '--root', app_temp_dir,
-        '--install-location', '/Applications',
-        '--scripts', scripts_dir,
-        '--identifier', 'com.cursor.pro',
-        '--version', '3.0.0',
-        'dist/CursorPro_Installer_ARM64.pkg'
-    ])
-
-    print("macOS PKG安装包创建成功!")
 
 def create_macos_dmg():
     """创建macOS DMG安装包"""
