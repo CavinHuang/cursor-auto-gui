@@ -71,10 +71,13 @@ def build_macos_arm64():
             '--clean',
             '--noupx',
             '--add-data=resources:resources',
+            '--add-binary=main.py:.',  # 确保main.py被正确添加为二进制文件
             '--add-binary=install.py:.',  # 添加安装脚本
             '--add-binary=launcher.py:.',  # 添加启动器脚本
+            '--add-binary=bootstrap.py:.',  # 添加引导脚本
+            '--add-binary=direct_launcher.py:.',  # 添加直接启动脚本
             '--icon=resources/icon.icns',  # 添加图标
-            'main.py'
+            'launcher.py'  # 使用launcher.py作为主入口点
         ])
 
     # 确保图标文件存在
@@ -86,8 +89,8 @@ def build_macos_arm64():
     if os.path.exists('CursorPro.spec'):
         subprocess.check_call([sys.executable, '-m', 'PyInstaller', 'CursorPro.spec'])
     else:
-        # 如果spec文件仍然不存在，直接使用main.py
-        print("警告: 未找到spec文件，使用main.py直接进行打包")
+        # 如果spec文件仍然不存在，直接使用launcher.py
+        print("警告: 未找到spec文件，使用launcher.py直接进行打包")
         subprocess.check_call([
             sys.executable, '-m', 'PyInstaller',
             '--name=CursorPro',
@@ -96,10 +99,13 @@ def build_macos_arm64():
             '--clean',
             '--noupx',
             '--add-data=resources:resources',
+            '--add-binary=main.py:.',  # 确保main.py被正确添加为二进制文件
             '--add-binary=install.py:.',  # 添加安装脚本
             '--add-binary=launcher.py:.',  # 添加启动器脚本
+            '--add-binary=bootstrap.py:.',  # 添加引导脚本
+            '--add-binary=direct_launcher.py:.',  # 添加直接启动脚本
             '--icon=resources/icon.icns',  # 添加图标
-            'main.py'
+            'launcher.py'  # 使用launcher.py作为主入口点
         ])
 
     # 确保输出目录存在

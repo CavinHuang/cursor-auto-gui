@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pkg-info overwrite-permissions="true" relocatable="false" identifier="com.cursor.pro" postinstall-action="none" version="3.0.0" format-version="2" generator-version="InstallCmds-860 (24D81)" install-location="/Applications" auth="root">
+    <payload numberOfFiles="1203" installKBytes="470057"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQuick.framework/Versions/Current" id="org.qt-project.QtQuick" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQml.framework/Versions/A" id="org.qt-project.QtQml" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtGui.framework/Versions/Current" id="org.qt-project.QtGui" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtWidgets.framework/Versions/Current" id="org.qt-project.QtWidgets" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtCore.framework/Versions/A" id="org.qt-project.QtCore" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtOpenGL.framework" id="org.qt-project.QtOpenGL" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtPdf.framework/Versions/A" id="org.qt-project.QtPdf" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtDBus.framework/Versions/Current" id="org.qt-project.QtDBus" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlWorkerScript.framework" id="org.qt-project.QtQmlWorkerScript" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtWidgets.framework" id="org.qt-project.QtWidgets" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtSvg.framework" id="org.qt-project.QtSvg" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlMeta.framework" id="org.qt-project.QtQmlMeta" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtOpenGL.framework/Versions/A" id="org.qt-project.QtOpenGL" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtCore.framework/Versions/A" id="org.qt-project.QtCore" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlMeta.framework/Versions/A" id="org.qt-project.QtQmlMeta" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/Current" id="org.qt-project.QtVirtualKeyboard" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlMeta.framework/Versions/Current" id="org.qt-project.QtQmlMeta" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtOpenGL.framework/Versions/A" id="org.qt-project.QtOpenGL" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQml.framework/Versions/Current" id="org.qt-project.QtQml" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtPdf.framework/Versions/Current" id="org.qt-project.QtPdf" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtOpenGL.framework" id="org.qt-project.QtOpenGL" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtWidgets.framework/Versions/Current" id="org.qt-project.QtWidgets" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtDBus.framework/Versions/Current" id="org.qt-project.QtDBus" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlModels.framework/Versions/A" id="org.qt-project.QtQmlModels" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQuick.framework/Versions/Current" id="org.qt-project.QtQuick" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtGui.framework" id="org.qt-project.QtGui" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtVirtualKeyboard.framework" id="org.qt-project.QtVirtualKeyboard" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtGui.framework/Versions/A" id="org.qt-project.QtGui" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlModels.framework/Versions/Current" id="org.qt-project.QtQmlModels" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtDBus.framework" id="org.qt-project.QtDBus" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQuick.framework/Versions/A" id="org.qt-project.QtQuick" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/A" id="org.qt-project.QtVirtualKeyboard" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtCore.framework" id="org.qt-project.QtCore" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlMeta.framework" id="org.qt-project.QtQmlMeta" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQml.framework/Versions/A" id="org.qt-project.QtQml" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtSvg.framework/Versions/Current" id="org.qt-project.QtSvg" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtNetwork.framework" id="org.qt-project.QtNetwork" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtSvg.framework/Versions/A" id="org.qt-project.QtSvg" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtNetwork.framework" id="org.qt-project.QtNetwork" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtSvg.framework/Versions/A" id="org.qt-project.QtSvg" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtPdf.framework" id="org.qt-project.QtPdf" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtSvg.framework" id="org.qt-project.QtSvg" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app" id="com.cursor.pro" CFBundleShortVersionString="3.0.0" CFBundleVersion="3.0.0"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlMeta.framework/Versions/A" id="org.qt-project.QtQmlMeta" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtOpenGL.framework/Versions/Current" id="org.qt-project.QtOpenGL" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtDBus.framework/Versions/A" id="org.qt-project.QtDBus" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtSvg.framework/Versions/Current" id="org.qt-project.QtSvg" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtWidgets.framework" id="org.qt-project.QtWidgets" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlWorkerScript.framework/Versions/Current" id="org.qt-project.QtQmlWorkerScript" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/Current" id="org.qt-project.QtVirtualKeyboard" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtNetwork.framework/Versions/A" id="org.qt-project.QtNetwork" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtCore.framework/Versions/Current" id="org.qt-project.QtCore" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtPdf.framework/Versions/Current" id="org.qt-project.QtPdf" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtGui.framework/Versions/A" id="org.qt-project.QtGui" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlModels.framework" id="org.qt-project.QtQmlModels" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtNetwork.framework/Versions/Current" id="org.qt-project.QtNetwork" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtNetwork.framework/Versions/A" id="org.qt-project.QtNetwork" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQuick.framework" id="org.qt-project.QtQuick" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQml.framework/Versions/Current" id="org.qt-project.QtQml" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQuick.framework" id="org.qt-project.QtQuick" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlModels.framework/Versions/A" id="org.qt-project.QtQmlModels" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlWorkerScript.framework/Versions/A" id="org.qt-project.QtQmlWorkerScript" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlModels.framework" id="org.qt-project.QtQmlModels" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtVirtualKeyboard.framework/Versions/A" id="org.qt-project.QtVirtualKeyboard" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtOpenGL.framework/Versions/Current" id="org.qt-project.QtOpenGL" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQml.framework" id="org.qt-project.QtQml" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtPdf.framework/Versions/A" id="org.qt-project.QtPdf" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtCore.framework" id="org.qt-project.QtCore" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlModels.framework/Versions/Current" id="org.qt-project.QtQmlModels" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlWorkerScript.framework" id="org.qt-project.QtQmlWorkerScript" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlWorkerScript.framework/Versions/A" id="org.qt-project.QtQmlWorkerScript" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtQmlMeta.framework/Versions/Current" id="org.qt-project.QtQmlMeta" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtGui.framework" id="org.qt-project.QtGui" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtNetwork.framework/Versions/Current" id="org.qt-project.QtNetwork" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtPdf.framework" id="org.qt-project.QtPdf" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtDBus.framework/Versions/A" id="org.qt-project.QtDBus" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQuick.framework/Versions/A" id="org.qt-project.QtQuick" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQml.framework" id="org.qt-project.QtQml" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtDBus.framework" id="org.qt-project.QtDBus" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtGui.framework/Versions/Current" id="org.qt-project.QtGui" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtVirtualKeyboard.framework" id="org.qt-project.QtVirtualKeyboard" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtCore.framework/Versions/Current" id="org.qt-project.QtCore" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtWidgets.framework/Versions/A" id="org.qt-project.QtWidgets" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Resources/PySide6/Qt/lib/QtWidgets.framework/Versions/A" id="org.qt-project.QtWidgets" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle path="./CursorPro.app/Contents/Frameworks/PySide6/Qt/lib/QtQmlWorkerScript.framework/Versions/Current" id="org.qt-project.QtQmlWorkerScript" CFBundleShortVersionString="6.8" CFBundleVersion="6.8.3"/>
+    <bundle-version>
+        <bundle id="com.cursor.pro"/>
+    </bundle-version>
+    <upgrade-bundle>
+        <bundle id="com.cursor.pro"/>
+    </upgrade-bundle>
+    <update-bundle/>
+    <atomic-update-bundle/>
+    <strict-identifier>
+        <bundle id="com.cursor.pro"/>
+    </strict-identifier>
+    <relocate>
+        <bundle id="com.cursor.pro"/>
+    </relocate>
+    <scripts>
+        <postinstall file="./postinstall" timeout="600"/>
+    </scripts>
+</pkg-info>

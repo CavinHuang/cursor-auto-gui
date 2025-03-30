@@ -1,0 +1,17 @@
+#!/bin/bash
+# 设置应用程序权限
+chmod -R 755 "/Applications/CursorPro.app"
+
+# 创建快捷方式到应用程序目录
+mkdir -p "/usr/local/bin"
+ln -sf "/Applications/CursorPro.app/Contents/MacOS/CursorPro" "/usr/local/bin/cursorpro"
+
+# 注册文件类型关联
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/CursorPro.app"
+
+# 刷新图标缓存
+touch "/Applications/CursorPro.app"
+touch "/Applications"
+
+echo "CursorPro安装完成！"
+exit 0

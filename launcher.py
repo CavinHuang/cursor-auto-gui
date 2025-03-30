@@ -63,6 +63,12 @@ def find_executable(app_path):
                     print(f"找到可执行文件: {exe_path}")
                     return exe_path
 
+        # 如果MacOS目录下没有找到，尝试在相同目录下查找main.py
+        main_py = os.path.join(os.path.dirname(sys.executable), "main.py")
+        if os.path.exists(main_py):
+            print(f"找到main.py: {main_py}")
+            return main_py
+
         print(f"警告: 在 {app_path} 中未找到可执行文件")
 
     # 对于非macOS或找不到可执行文件的情况，返回None
@@ -72,6 +78,19 @@ def launch_app():
     """在确认有管理员权限后，启动主应用程序"""
     print("=== 启动主应用程序 ===")
 
+    # 创建日志目录
+    log_dir = os.path.expanduser("~/Library/Logs/CursorPro")
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, "launcher_log.txt")
+
+    with open(log_file, "a") as f:
+        f.write(f"\n\n=== 启动尝试: {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+        f.write(f"Python版本: {sys.version}\n")
+        f.write(f"可执行文件: {sys.executable}\n")
+        f.write(f"当前工作目录: {os.getcwd()}\n")
+        f.write(f"命令行参数: {sys.argv}\n")
+        f.write(f"是否打包环境: {is_frozen()}\n")
+
     # 使用子进程启动主程序
     try:
         # 检查是否在打包环境中
@@ -79,13 +98,187 @@ def launch_app():
             # 打包环境
             if platform.system() == 'Darwin':  # macOS
                 app_path = get_app_path()
-                exe_path = find_executable(app_path)
+                with open(log_file, "a") as f:
+                    f.write(f"应用路径: {app_path}\n")
 
-                if not exe_path:
-                    raise RuntimeError(f"在 {app_path} 中未找到可执行文件")
+                # 策略0: 优先使用bootstrap.py
+                bootstrap_path = os.path.join(app_path, "Contents/Resources/bootstrap.py")
+                with open(log_file, "a") as f:
+                    f.write(f"查找bootstrap.py路径: {bootstrap_path}\n")
 
-                print(f"使用可执行文件: {exe_path}")
-                args = [exe_path, "--skip-admin-check"]
+                if os.path.exists(bootstrap_path):
+                    with open(log_file, "a") as f:
+                        f.write(f"找到bootstrap.py: {bootstrap_path}\n")
+
+                    # 尝试找到合适的Python解释器
+                    # 首先尝试系统解释器，因为PyInstaller打包的Python可能有问题
+                    python_path = "/usr/bin/python3"
+                    if not os.path.exists(python_path):
+                        python_path = "/usr/bin/python"
+
+                    with open(log_file, "a") as f:
+                        f.write(f"使用Python解释器: {python_path}\n")
+
+                    # 设置环境变量
+                    process_env = os.environ.copy()
+                    resources_dir = os.path.dirname(bootstrap_path)
+
+                    # 添加额外的环境变量以确保Python找到所有模块
+                    frameworks_dir = os.path.join(app_path, "Contents/Frameworks")
+                    if os.path.exists(frameworks_dir):
+                        python_path_entries = [
+                            resources_dir,
+                            frameworks_dir,
+                            os.path.join(frameworks_dir, "lib-dynload")
+                        ]
+                        process_env['PYTHONPATH'] = os.pathsep.join(python_path_entries)
+                        with open(log_file, "a") as f:
+                            f.write(f"设置PYTHONPATH: {process_env['PYTHONPATH']}\n")
+
+                    # 确保PATH中包含MacOS目录
+                    macos_dir = os.path.join(app_path, "Contents/MacOS")
+                    if os.path.exists(macos_dir):
+                        process_env['PATH'] = f"{macos_dir}:{process_env.get('PATH', '')}"
+                        with open(log_file, "a") as f:
+                            f.write(f"设置PATH: {process_env['PATH']}\n")
+
+                    # 启动引导脚本
+                    args = [python_path, bootstrap_path, "--skip-admin-check"]
+                    with open(log_file, "a") as f:
+                        f.write(f"执行命令: {' '.join(args)}\n")
+
+                    process = subprocess.Popen(
+                        args,
+                        env=process_env,
+                        cwd=resources_dir,
+                        # 重定向标准输出和错误到日志文件
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                    )
+
+                    # 等待一小段时间确保程序启动
+                    time.sleep(2)
+
+                    # 检查进程是否成功启动
+                    if process.poll() is None:  # None表示进程仍在运行
+                        with open(log_file, "a") as f:
+                            f.write("使用bootstrap.py成功启动主程序\n")
+
+                        # 如果使用Popen，我们可以捕获它的输出
+                        stdout_data, stderr_data = process.communicate(timeout=1)
+                        with open(log_file, "a") as f:
+                            f.write("\n--- bootstrap.py 输出 ---\n")
+                            f.write(stdout_data.decode('utf-8', errors='ignore'))
+                            if stderr_data:
+                                f.write("\n--- bootstrap.py 错误 ---\n")
+                                f.write(stderr_data.decode('utf-8', errors='ignore'))
+                            f.write("\n--- 输出结束 ---\n")
+
+                        return True
+                    else:
+                        with open(log_file, "a") as f:
+                            f.write(f"bootstrap.py进程退出，返回码: {process.returncode}\n")
+
+                            # 捕获输出
+                            stdout_data, stderr_data = process.communicate()
+                            f.write("\n--- bootstrap.py 输出 ---\n")
+                            f.write(stdout_data.decode('utf-8', errors='ignore'))
+                            if stderr_data:
+                                f.write("\n--- bootstrap.py 错误 ---\n")
+                                f.write(stderr_data.decode('utf-8', errors='ignore'))
+                            f.write("\n--- 输出结束 ---\n")
+
+                # 如果bootstrap.py不存在或启动失败，创建一个简单的包装脚本
+                with open(log_file, "a") as f:
+                    f.write("\n尝试生成临时包装脚本...\n")
+
+                # 创建临时脚本目录
+                temp_dir = os.path.join(log_dir, "temp_scripts")
+                os.makedirs(temp_dir, exist_ok=True)
+
+                # 生成一个简单的包装脚本
+                wrapper_script_path = os.path.join(temp_dir, "run_cursor_pro.py")
+                with open(wrapper_script_path, "w") as wrapper_file:
+                    wrapper_file.write(f"""#!/usr/bin/env python
+# 自动生成的CursorPro包装脚本
+import os
+import sys
+import subprocess
+import time
+
+# 添加必要的路径
+app_path = "{app_path}"
+resources_dir = os.path.join(app_path, "Contents/Resources")
+frameworks_dir = os.path.join(app_path, "Contents/Frameworks")
+sys.path.insert(0, resources_dir)
+sys.path.insert(0, frameworks_dir)
+
+# 设置环境变量
+os.environ['PYTHONPATH'] = os.pathsep.join([resources_dir, frameworks_dir])
+
+# 尝试运行main.py
+main_path = os.path.join(resources_dir, "main.py")
+if os.path.exists(main_path):
+    print(f"执行main.py: {{main_path}}")
+    sys.argv.append("--skip-admin-check")
+
+    # 方式1: 使用exec执行
+    try:
+        with open(main_path, 'r') as main_file:
+            code = main_file.read()
+        exec(code, {{'__file__': main_path, '__name__': '__main__'}})
+    except Exception as e:
+        print(f"执行失败: {{e}}")
+
+        # 方式2: 使用子进程执行
+        try:
+            subprocess.call([sys.executable, main_path, "--skip-admin-check"])
+        except Exception as e:
+            print(f"子进程执行失败: {{e}}")
+""")
+
+                # 使脚本可执行
+                os.chmod(wrapper_script_path, 0o755)
+
+                with open(log_file, "a") as f:
+                    f.write(f"创建了临时包装脚本: {wrapper_script_path}\n")
+
+                # 使用系统Python执行包装脚本
+                python_path = "/usr/bin/python3"
+                if not os.path.exists(python_path):
+                    python_path = "/usr/bin/python"
+
+                with open(log_file, "a") as f:
+                    f.write(f"使用Python解释器执行包装脚本: {python_path}\n")
+
+                process = subprocess.Popen(
+                    [python_path, wrapper_script_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+
+                # 等待一小段时间确保程序启动
+                time.sleep(2)
+
+                # 检查进程是否成功启动
+                if process.poll() is None:  # None表示进程仍在运行
+                    with open(log_file, "a") as f:
+                        f.write("使用包装脚本成功启动主程序\n")
+                    return True
+                else:
+                    with open(log_file, "a") as f:
+                        f.write(f"包装脚本进程退出，返回码: {process.returncode}\n")
+
+                        # 捕获输出
+                        stdout_data, stderr_data = process.communicate()
+                        f.write("\n--- 包装脚本输出 ---\n")
+                        f.write(stdout_data.decode('utf-8', errors='ignore'))
+                        if stderr_data:
+                            f.write("\n--- 包装脚本错误 ---\n")
+                            f.write(stderr_data.decode('utf-8', errors='ignore'))
+                        f.write("\n--- 输出结束 ---\n")
+
+                # 如果前面的方法都失败，继续使用原来的策略
             else:
                 # Windows或Linux
                 exe_path = sys.executable
@@ -95,24 +288,28 @@ def launch_app():
             current_dir = os.getcwd()
             args = [sys.executable, os.path.join(current_dir, "main.py"), "--skip-admin-check"]
 
-        print(f"执行命令: {' '.join(args)}")
+        with open(log_file, "a") as f:
+            f.write(f"最终执行命令: {' '.join(args)}\n")
 
         # 使用subprocess.Popen启动进程，并等待它完成
         process = subprocess.Popen(args)
 
         # 等待一小段时间确保程序启动
-        time.sleep(1)
+        time.sleep(2)
 
         # 检查进程是否成功启动
         if process.poll() is None:  # None表示进程仍在运行
-            print("主程序成功启动")
+            with open(log_file, "a") as f:
+                f.write("主程序成功启动\n")
             return True
         else:
-            print(f"主程序启动失败，返回码: {process.returncode}")
+            with open(log_file, "a") as f:
+                f.write(f"主程序启动失败，返回码: {process.returncode}\n")
             return False
     except Exception as e:
-        print(f"启动主程序失败: {e}")
-        traceback.print_exc()
+        with open(log_file, "a") as f:
+            f.write(f"启动主程序失败: {e}\n")
+            f.write(traceback.format_exc())
         return False
 
 def main():
