@@ -44,7 +44,7 @@ coll = COLLECT(
 )
 app = BUNDLE(
     coll,
-    name='CursorPro-gui.app',
+    name='CursorPro.app',
     icon=None,
     bundle_identifier=None,
 )

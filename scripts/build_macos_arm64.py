@@ -103,7 +103,7 @@ def build_macos_arm64():
         ])
 
     # 确保输出目录存在
-    if not os.path.exists('dist/CursorPro-gui.app'):
+    if not os.path.exists('dist/CursorPro.app'):
         print("警告: 打包后未找到应用程序，检查output目录")
         # 列出dist目录内容
         if os.path.exists('dist'):
@@ -113,13 +113,13 @@ def build_macos_arm64():
         return
 
     # 确保包含设置权限的步骤
-    macos_exe_path = os.path.join('dist', 'CursorPro-gui.app', 'Contents/MacOS/CursorPro')
+    macos_exe_path = os.path.join('dist', 'CursorPro.app', 'Contents/MacOS/CursorPro')
     if os.path.exists(macos_exe_path):
         os.chmod(macos_exe_path, 0o755)
     else:
         print(f"警告: 可执行文件不存在: {macos_exe_path}")
         print("搜索可能的可执行文件位置...")
-        macos_dir = os.path.join('dist', 'CursorPro-gui.app', 'Contents/MacOS')
+        macos_dir = os.path.join('dist', 'CursorPro.app', 'Contents/MacOS')
         if os.path.exists(macos_dir):
             for file in os.listdir(macos_dir):
                 exe_path = os.path.join(macos_dir, file)
@@ -130,7 +130,7 @@ def build_macos_arm64():
                         print(f"    已设置执行权限: {exe_path}")
 
     # 为所有脚本和二进制文件设置可执行权限
-    for root, dirs, files in os.walk('dist/CursorPro-gui.app'):
+    for root, dirs, files in os.walk('dist/CursorPro.app'):
         for file in files:
             file_path = os.path.join(root, file)
             # 只对可能需要执行权限的文件设置
@@ -138,7 +138,7 @@ def build_macos_arm64():
                 os.chmod(file_path, 0o755)
 
     # 添加 Info.plist 设置以避免隔离
-    info_plist_path = 'dist/CursorPro-gui.app/Contents/Info.plist'
+    info_plist_path = 'dist/CursorPro.app/Contents/Info.plist'
     if os.path.exists(info_plist_path):
         # 使用plistlib读取和修改plist文件，更加可靠
         try:
@@ -184,7 +184,7 @@ def build_macos_arm64():
     subprocess.check_call(['codesign', '--force', '--deep', '--sign', '-',
                           '--entitlements', entitlements_path,
                           '--options', 'runtime',
-                          'dist/CursorPro-gui.app'])
+                          'dist/CursorPro.app'])
 
     print('MacOS ARM64 build completed successfully!')
     print('安装包已准备就绪:')
@@ -215,7 +215,7 @@ def safe_clean_directories(directories):
                                  stdout=subprocess.DEVNULL)
 
                     # 特别处理CodeResources文件
-                    code_resources = os.path.join(directory, 'CursorPro-gui.app/Contents/_CodeSignature/CodeResources')
+                    code_resources = os.path.join(directory, 'CursorPro.app/Contents/_CodeSignature/CodeResources')
                     if os.path.exists(code_resources):
                         os.chmod(code_resources, 0o777)
 
@@ -295,17 +295,17 @@ def create_macos_installer():
     with open(postinstall_path, 'w') as f:
         f.write('''#!/bin/bash
 # 设置应用程序权限
-chmod -R 755 "/Applications/CursorPro-gui.app"
+chmod -R 755 "/Applications/CursorPro.app"
 
 # 创建快捷方式到应用程序目录
 mkdir -p "/usr/local/bin"
-ln -sf "/Applications/CursorPro-gui.app/Contents/MacOS/CursorPro" "/usr/local/bin/cursorpro"
+ln -sf "/Applications/CursorPro.app/Contents/MacOS/CursorPro" "/usr/local/bin/cursorpro"
 
 # 注册文件类型关联
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/CursorPro-gui.app"
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "/Applications/CursorPro.app"
 
 # 刷新图标缓存
-touch "/Applications/CursorPro-gui.app"
+touch "/Applications/CursorPro.app"
 touch "/Applications"
 
 echo "CursorPro安装完成！"
@@ -318,7 +318,7 @@ exit 0
     # 复制应用到临时目录
     app_temp_dir = os.path.join(installer_dir, 'app')
     os.makedirs(app_temp_dir)
-    shutil.copytree('dist/CursorPro-gui.app', os.path.join(app_temp_dir, 'CursorPro-gui.app'))
+    shutil.copytree('dist/CursorPro.app', os.path.join(app_temp_dir, 'CursorPro.app'))
 
     # 使用pkgbuild创建安装包
     subprocess.check_call([
@@ -360,7 +360,7 @@ icon_size = 80
 
 # 图标在DMG中的位置
 icon_locations = {
-    'CursorPro-gui.app': (120, 120),
+    'CursorPro.app': (120, 120),
     'Applications': (380, 120)
 }
 
@@ -368,13 +368,13 @@ icon_locations = {
 window_rect = ((100, 100), (500, 300))
 
 # 文件要包含在DMG中
-files = [ 'dist/CursorPro-gui.app' ]
+files = [ 'dist/CursorPro.app' ]
 
 # 符号链接到Applications文件夹
 symlinks = { 'Applications': '/Applications' }
 
 # 是否隐藏扩展名
-hide_extension = { 'CursorPro-gui.app': True }
+hide_extension = { 'CursorPro.app': True }
 
 # DMG格式
 format = 'UDBZ'  # 压缩格式
