@@ -80,7 +80,7 @@ def find_executable_in_app(app_path):
     logger.info(f"在应用包中查找可执行文件: {app_path}")
 
     # 标准位置的可执行文件名称尝试列表
-    possible_names = ["CursorPro", "CursorPro-gui", app_path.split("/")[-1].replace(".app", "")]
+    possible_names = ["CursorPro", app_path.split("/")[-1].replace(".app", "")]
 
     # MacOS目录
     macos_dir = os.path.join(app_path, "Contents/MacOS")
