@@ -1,15 +1,169 @@
-import threading
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
-                              QPushButton, QLabel, QTextEdit, QFrame, QMessageBox)
+                              QPushButton, QLabel, QTextEdit, QFrame)
 from PySide6.QtCore import QThread, Signal
 from src.logic.cursor_pro.keep_alive import check_cursor_version, init_keep_alive, reset_machine_id
 from src.logic.log.log_manager import logger, LogLevel
 from src.logic.utils.admin_helper import is_admin
 import platform
 import subprocess
-import time
-from PySide6.QtCore import QMetaObject, Qt
-from PySide6.QtCore import QMetaObject, Qt
+import json
+import traceback
+
+
+class ResetMachineIdWorker(QThread):
+    """重置机器码的工作线程"""
+    # 定义信号
+    log_signal = Signal(str, object)
+    finished_signal = Signal(bool, str)
+    progress_signal = Signal(str)  # 添加进度信号
+
+    def run(self):
+        """线程运行的主函数"""
+        try:
+            # 导入需要的模块
+            import os
+            import traceback
+            from src.logic.cursor_pro.reset_machine import MachineIDResetter
+            from src.logic.cursor_pro.advanced_reset import AdvancedMachineIDResetter
+
+            # 发送日志信号
+            self.log_signal.emit("开始重置机器码...", LogLevel.INFO)
+            self.progress_signal.emit("检查版本")
+            self.log_signal.emit("正在检查版本...", LogLevel.INFO)
+
+            # 检查版本
+            try:
+                greater_than_0_45 = check_cursor_version()
+            except Exception as e:
+                self.log_signal.emit(f"版本检查失败: {str(e)}", LogLevel.ERROR)
+                self.finished_signal.emit(False, f"版本检查失败: {str(e)}")
+                return
+
+            # 发送日志信号
+            self.progress_signal.emit("准备重置")
+
+            # 基于版本选择不同的重置方法
+            if greater_than_0_45:
+                # 对于高版本的Cursor，使用高级重置器
+                self.log_signal.emit("检测到高版本Cursor，使用高级重置方法...", LogLevel.INFO)
+
+                try:
+                    # 创建高级重置器实例
+                    advanced_resetter = AdvancedMachineIDResetter()
+                    self.log_signal.emit("初始化高级重置器...", LogLevel.INFO)
+                    self.progress_signal.emit("执行重置")
+
+                    # 执行重置
+                    success = advanced_resetter.reset()
+
+                    if success:
+                        self.progress_signal.emit("完成")
+                        self.log_signal.emit("高级重置方法成功！", LogLevel.INFO)
+                        self.log_signal.emit("请重启Cursor应用使更改生效", LogLevel.INFO)
+                        self.finished_signal.emit(True, "")
+                        return
+                    else:
+                        self.log_signal.emit("高级重置方法失败，尝试使用标准方法...", LogLevel.WARNING)
+                except Exception as e:
+                    error_detail = traceback.format_exc()
+                    self.log_signal.emit(f"高级重置方法出错: {str(e)}", LogLevel.ERROR)
+                    self.log_signal.emit(f"错误详情: {error_detail}", LogLevel.DEBUG)
+                    self.log_signal.emit("尝试使用标准方法...", LogLevel.WARNING)
+
+            # 使用标准方法重置（低版本或高级方法失败时的后备方案）
+            self.log_signal.emit("使用标准方法重置机器码...", LogLevel.INFO)
+            self.progress_signal.emit("执行重置")
+
+            try:
+                resetter = MachineIDResetter()
+                success = resetter.reset_machine_ids()
+
+                if not success:
+                    raise Exception("标准重置方法失败，请查看日志了解详情")
+
+                # 成功完成
+                self.progress_signal.emit("完成")
+                self.log_signal.emit("机器码重置成功！", LogLevel.INFO)
+                self.finished_signal.emit(True, "")
+
+            except PermissionError as e:
+                self.log_signal.emit(f"权限错误: {str(e)}", LogLevel.ERROR)
+                self.finished_signal.emit(False, f"权限错误: {str(e)}，请以管理员身份运行")
+                return
+            except FileNotFoundError as e:
+                self.log_signal.emit(f"文件未找到: {str(e)}", LogLevel.ERROR)
+                self.finished_signal.emit(False, f"文件未找到: {str(e)}")
+                return
+            except json.JSONDecodeError as e:
+                self.log_signal.emit(f"JSON解析错误: {str(e)}", LogLevel.ERROR)
+                self.finished_signal.emit(False, f"JSON解析错误: {str(e)}，配置文件可能损坏")
+                return
+            except Exception as e:
+                error_detail = traceback.format_exc()
+                self.log_signal.emit(f"重置过程出错: {str(e)}", LogLevel.ERROR)
+                self.log_signal.emit(f"错误详情: {error_detail}", LogLevel.DEBUG)
+                self.finished_signal.emit(False, str(e))
+                return
+
+        except Exception as e:
+            # 捕获所有未处理的异常
+            error_detail = traceback.format_exc()
+            self.log_signal.emit(f"重置失败: {str(e)}", LogLevel.ERROR)
+            self.log_signal.emit(f"错误详情: {error_detail}", LogLevel.DEBUG)
+            self.finished_signal.emit(False, str(e))
+
+
+class RegisterAccountWorker(QThread):
+    """注册新账号的工作线程"""
+    # 定义信号
+    log_signal = Signal(str, object)
+    finished_signal = Signal(bool, str)
+    progress_signal = Signal(str)  # 添加进度信号
+
+    def run(self):
+        """线程运行的主函数"""
+        try:
+            # 发送日志信号
+            self.log_signal.emit("开始注册新账号...", LogLevel.INFO)
+            self.progress_signal.emit("注册中")
+
+            # 执行注册操作，捕获可能的网络和文件访问错误
+            try:
+                # 执行注册流程
+                init_keep_alive()
+            except ConnectionError as e:
+                self.log_signal.emit(f"网络连接错误: {str(e)}", LogLevel.ERROR)
+                self.finished_signal.emit(False, f"网络连接错误: {str(e)}")
+                return
+            except TimeoutError as e:
+                self.log_signal.emit(f"连接超时: {str(e)}", LogLevel.ERROR)
+                self.finished_signal.emit(False, f"连接超时: {str(e)}")
+                return
+            except PermissionError as e:
+                self.log_signal.emit(f"权限错误: {str(e)}", LogLevel.ERROR)
+                self.finished_signal.emit(False, f"权限错误: {str(e)}，请以管理员身份运行")
+                return
+            except json.JSONDecodeError as e:
+                self.log_signal.emit(f"JSON解析错误: {str(e)}", LogLevel.ERROR)
+                self.finished_signal.emit(False, f"JSON解析错误: {str(e)}，配置文件可能损坏")
+                return
+            except Exception as e:
+                self.log_signal.emit(f"注册过程出错: {str(e)}", LogLevel.ERROR)
+                # 记录详细的错误堆栈
+                error_stack = traceback.format_exc()
+                self.log_signal.emit(f"错误详情: {error_stack}", LogLevel.DEBUG)
+                self.finished_signal.emit(False, str(e))
+                return
+
+            # 成功完成
+            self.progress_signal.emit("完成")
+            self.log_signal.emit("账号注册成功！", LogLevel.INFO)
+            self.finished_signal.emit(True, "")
+        except Exception as e:
+            # 捕获所有未处理的异常
+            self.log_signal.emit(f"注册失败: {str(e)}", LogLevel.ERROR)
+            self.finished_signal.emit(False, str(e))
+
 
 class HomePage(QWidget):
     """主页类，显示主要功能和日志输出"""
@@ -26,6 +180,10 @@ class HomePage(QWidget):
 
         # 显示权限状态
         self.show_sample_logs()
+
+        # 初始化工作线程对象为None
+        self.reset_thread = None
+        self.register_thread = None
 
     def check_admin_privileges(self):
         """检查程序是否有管理员权限 - 为了保持兼容性，调用新的helper函数"""
@@ -203,10 +361,15 @@ class HomePage(QWidget):
         logger.log(f"重置失败: {error_msg}", LogLevel.ERROR)
 
     def reset_machine_code(self):
-        """重置机器码 - 简化版本，不实时更新UI"""
+        """重置机器码 - 使用QThread实现"""
         # 检查是否有正在运行的操作
         if hasattr(self, '_reset_running') and self._reset_running:
             logger.log("重置操作正在进行中，请稍后再试", LogLevel.WARNING)
+            return
+
+        # 检查是否已经有一个线程在运行
+        if self.reset_thread is not None:
+            logger.log("已有一个重置线程在运行，请等待完成", LogLevel.WARNING)
             return
 
         try:
@@ -217,36 +380,86 @@ class HomePage(QWidget):
             self.reset_button.setEnabled(False)
             self.reset_button.setText("执行中...")
 
-            # 记录开始日志
-            logger.log("开始重置机器码...", LogLevel.INFO)
-            logger.log("正在检查版本...", LogLevel.INFO)
+            # 创建并配置工作线程
+            self.reset_thread = ResetMachineIdWorker()
 
-            # 直接在主线程中执行操作
+            # 连接信号
+            self.reset_thread.log_signal.connect(
+                lambda msg, level: logger.log(msg, level)
+            )
+            self.reset_thread.progress_signal.connect(
+                lambda msg: self.reset_button.setText(f"执行中({msg})...")
+            )
+            self.reset_thread.finished_signal.connect(self.on_reset_finished)
+
+            # 添加线程结束信号以确保清理
+            self.reset_thread.finished.connect(self.cleanup_reset_thread)
+
+            # 记录更多日志信息
+            logger.log("启动重置机器码线程...", LogLevel.DEBUG)
+
+            # 启动线程
+            self.reset_thread.start()
+
+        except Exception as e:
+            logger.log(f"启动重置线程失败: {str(e)}", LogLevel.ERROR)
+            self.reset_button.setEnabled(True)
+            self.reset_button.setText("执行")
+            self._reset_running = False
+            # 确保线程被清理
+            self.reset_thread = None
+
+    def cleanup_reset_thread(self):
+        """清理重置线程资源"""
+        logger.log("重置线程已结束，清理资源...", LogLevel.DEBUG)
+        if self.reset_thread is not None:
+            # 确保不再有信号连接
             try:
-                greater_than_0_45 = check_cursor_version()
-                logger.log("正在重置机器码...", LogLevel.INFO)
-                reset_machine_id(greater_than_0_45)
+                self.reset_thread.log_signal.disconnect()
+                self.reset_thread.progress_signal.disconnect()
+                self.reset_thread.finished_signal.disconnect()
+                self.reset_thread.finished.disconnect()
+            except Exception:
+                # 忽略断开不存在的连接的错误
+                pass
+            # 等待线程完全结束
+            if self.reset_thread.isRunning():
+                self.reset_thread.wait(1000)  # 最多等待1秒
+            # 允许线程被垃圾回收
+            self.reset_thread = None
+
+    def on_reset_finished(self, success, error_msg):
+        """重置操作完成的回调"""
+        try:
+            if success:
                 logger.log("重置完成", LogLevel.INFO)
-            except Exception as e:
-                logger.log(f"重置失败: {str(e)}", LogLevel.ERROR)
+            else:
+                logger.log(f"重置操作失败: {error_msg}", LogLevel.ERROR)
 
             # 恢复按钮状态
             self.reset_button.setEnabled(True)
             self.reset_button.setText("执行")
 
-        except Exception as e:
-            logger.log(f"操作异常: {str(e)}", LogLevel.ERROR)
-            self.reset_button.setEnabled(True)
-            self.reset_button.setText("执行")
-        finally:
             # 标记操作结束
             self._reset_running = False
 
+        except Exception as e:
+            logger.log(f"在处理重置完成回调时出错: {str(e)}", LogLevel.ERROR)
+            # 确保UI恢复正常状态
+            self.reset_button.setEnabled(True)
+            self.reset_button.setText("执行")
+            self._reset_running = False
+
     def register_new_account(self):
-        """注册新账号 - 简化版本，不使用线程"""
+        """注册新账号 - 使用QThread实现"""
         # 检查是否有正在运行的操作
         if hasattr(self, '_register_running') and self._register_running:
             logger.log("注册操作正在进行中，请稍后再试", LogLevel.WARNING)
+            return
+
+        # 检查是否已经有一个线程在运行
+        if self.register_thread is not None:
+            logger.log("已有一个注册线程在运行，请等待完成", LogLevel.WARNING)
             return
 
         try:
@@ -257,26 +470,74 @@ class HomePage(QWidget):
             self.reg_button.setEnabled(False)
             self.reg_button.setText("执行中...")
 
-            # 记录开始日志
-            logger.log("开始注册新账号...", LogLevel.INFO)
+            # 创建并配置工作线程
+            self.register_thread = RegisterAccountWorker()
 
-            # 直接在主线程中执行操作
+            # 连接信号
+            self.register_thread.log_signal.connect(
+                lambda msg, level: logger.log(msg, level)
+            )
+            self.register_thread.progress_signal.connect(
+                lambda msg: self.reg_button.setText(f"执行中({msg})...")
+            )
+            self.register_thread.finished_signal.connect(self.on_register_finished)
+
+            # 添加线程结束信号以确保清理
+            self.register_thread.finished.connect(self.cleanup_register_thread)
+
+            # 记录更多日志信息
+            logger.log("启动注册新账号线程...", LogLevel.DEBUG)
+
+            # 启动线程
+            self.register_thread.start()
+
+        except Exception as e:
+            logger.log(f"启动注册线程失败: {str(e)}", LogLevel.ERROR)
+            self.reg_button.setEnabled(True)
+            self.reg_button.setText("执行")
+            self._register_running = False
+            # 确保线程被清理
+            self.register_thread = None
+
+    def cleanup_register_thread(self):
+        """清理注册线程资源"""
+        logger.log("注册线程已结束，清理资源...", LogLevel.DEBUG)
+        if self.register_thread is not None:
+            # 确保不再有信号连接
             try:
-                init_keep_alive()
+                self.register_thread.log_signal.disconnect()
+                self.register_thread.progress_signal.disconnect()
+                self.register_thread.finished_signal.disconnect()
+                self.register_thread.finished.disconnect()
+            except Exception:
+                # 忽略断开不存在的连接的错误
+                pass
+            # 等待线程完全结束
+            if self.register_thread.isRunning():
+                self.register_thread.wait(1000)  # 最多等待1秒
+            # 允许线程被垃圾回收
+            self.register_thread = None
+
+    def on_register_finished(self, success, error_msg):
+        """注册操作完成的回调"""
+        try:
+            if success:
                 logger.log("注册完成", LogLevel.INFO)
-            except Exception as e:
-                logger.log(f"注册失败: {str(e)}", LogLevel.ERROR)
+            else:
+                logger.log(f"注册操作失败: {error_msg}", LogLevel.ERROR)
 
             # 恢复按钮状态
             self.reg_button.setEnabled(True)
             self.reg_button.setText("执行")
 
+            # 标记操作结束
+            self._register_running = False
+
         except Exception as e:
-            logger.log(f"操作异常: {str(e)}", LogLevel.ERROR)
+            logger.log(f"在处理注册完成回调时出错: {str(e)}", LogLevel.ERROR)
+            # 确保UI恢复正常状态
             self.reg_button.setEnabled(True)
             self.reg_button.setText("执行")
-        finally:
-            # 标记操作结束
             self._register_running = False
 
     def set_theme(self, is_dark):

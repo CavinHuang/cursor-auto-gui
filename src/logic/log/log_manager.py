@@ -1,12 +1,14 @@
 import logging
 from enum import Enum, auto
 from PySide6.QtWidgets import QTextEdit
+from PySide6.QtCore import QMutex, QMutexLocker
 import datetime
 import time
 import os
 import sys
 import platform
 from logging.handlers import RotatingFileHandler
+import threading
 
 class LogLevel(Enum):
     """日志级别枚举类"""
@@ -68,12 +70,17 @@ class LogManager:
             LogLevel.CRITICAL: "#d08770"  # 淡橙色
         }
 
+        # 线程安全锁
+        self.mutex = QMutex()
+        self.recent_logs_lock = threading.RLock()
+
     def set_text_color(self, color):
         """设置日志文本颜色
 
         Args:
             color (str): 颜色代码，如 "#333333" 或 "#e0e0e0"
         """
+        mutex_locker = QMutexLocker(self.mutex)
         self.text_color = color
 
         # 根据文本颜色判断是否为深色主题
@@ -93,6 +100,7 @@ class LogManager:
 
     def set_gui_logger(self, text_edit):
         """设置GUI日志输出对象"""
+        mutex_locker = QMutexLocker(self.mutex)
         if isinstance(text_edit, QTextEdit):
             self.gui_logger = text_edit
 
@@ -105,6 +113,7 @@ class LogManager:
             max_size_mb (int, optional): 单个日志文件最大大小，单位MB，默认10MB
             backup_count (int, optional): 保留的旧日志文件数量，默认5个
         """
+        mutex_locker = QMutexLocker(self.mutex)
         # 移除现有的文件处理器
         if self.file_handler:
             self.logger.removeHandler(self.file_handler)
@@ -153,10 +162,12 @@ class LogManager:
 
     def get_log_file_path(self):
         """获取当前日志文件路径"""
+        mutex_locker = QMutexLocker(self.mutex)
         return self.log_file_path
 
     def disable_file_logger(self):
         """禁用文件日志"""
+        mutex_locker = QMutexLocker(self.mutex)
         if self.file_handler:
             self.logger.info("===== 文件日志结束 =====")
             self.logger.removeHandler(self.file_handler)
@@ -169,20 +180,22 @@ class LogManager:
         log_id = f"{level.name}:{message}"
         current_time = time.time()
 
-        # 检查是否是重复日志
-        if log_id in self.recent_logs:
-            last_time = self.recent_logs[log_id]
-            # 如果上次记录的时间距离现在小于指定的时间窗口，则跳过本次记录
-            if current_time - last_time < self.dedup_window:
-                return
+        # 使用线程锁保护去重机制
+        with self.recent_logs_lock:
+            # 检查是否是重复日志
+            if log_id in self.recent_logs:
+                last_time = self.recent_logs[log_id]
+                # 如果上次记录的时间距离现在小于指定的时间窗口，则跳过本次记录
+                if current_time - last_time < self.dedup_window:
+                    return
 
-        # 更新日志记录时间
-        self.recent_logs[log_id] = current_time
+            # 更新日志记录时间
+            self.recent_logs[log_id] = current_time
 
-        # 清理过期的日志记录，避免内存持续增长
-        self.clean_old_logs(current_time)
+            # 清理过期的日志记录，避免内存持续增长
+            self.clean_old_logs(current_time)
 
-        # 调用原有的日志记录逻辑
+        # 标准日志记录 - 这部分已经是线程安全的
         if level == LogLevel.DEBUG:
             self.logger.debug(message)
         elif level == LogLevel.INFO:
@@ -195,6 +208,8 @@ class LogManager:
             self.logger.critical(message)
 
         # 如果设置了GUI日志输出对象，则同时在GUI中显示日志
+        # 这部分需要使用互斥锁保护
+        mutex_locker = QMutexLocker(self.mutex)
         if self.gui_logger:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -213,9 +228,13 @@ class LogManager:
             elif level == LogLevel.CRITICAL:
                 log_html = f'<span style="color:{self.text_color};">🔥 {timestamp} - <span style="color:{level_color};">CRITICAL</span>: {message}</span>'
 
-            # 向GUI日志输出添加HTML格式的日志消息
-            self.gui_logger.insertHtml(log_html + "<br>")
-            self.gui_logger.ensureCursorVisible()
+            try:
+                # 向GUI日志输出添加HTML格式的日志消息
+                self.gui_logger.insertHtml(log_html + "<br>")
+                self.gui_logger.ensureCursorVisible()
+            except Exception as e:
+                # 如果GUI日志输出失败，仍然继续标准日志记录
+                print(f"GUI日志输出失败: {str(e)}")
 
     def info(self, message):
         """记录INFO级别日志"""
@@ -239,6 +258,7 @@ class LogManager:
 
     def clean_old_logs(self, current_time):
         """清理超过时间窗口的日志记录"""
+        # 已经在调用该方法的地方获取了锁，不需要再次获取
         expired_logs = []
         for log_id, timestamp in self.recent_logs.items():
             if current_time - timestamp > self.dedup_window * 5:  # 超过时间窗口的5倍时清理
@@ -253,6 +273,7 @@ class LogManager:
         Args:
             level: 可以是LogLevel枚举值或者logging模块的级别常量
         """
+        mutex_locker = QMutexLocker(self.mutex)
         # 转换LogLevel枚举值到logging模块的级别常量
         if isinstance(level, LogLevel):
             if level == LogLevel.DEBUG:
@@ -288,6 +309,7 @@ class LogManager:
             log_dir: 日志目录路径，默认使用当前日志文件的目录
             max_days: 保留的最大天数，默认30天
         """
+        mutex_locker = QMutexLocker(self.mutex)
         # 如果没有指定日志目录，使用当前日志文件的目录
         if not log_dir and self.log_file_path:
             log_dir = os.path.dirname(self.log_file_path)
