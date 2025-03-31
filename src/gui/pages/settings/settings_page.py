@@ -1,12 +1,10 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                              QPushButton, QLabel, QFrame, QComboBox,
                              QCheckBox, QLineEdit, QGroupBox, QFormLayout,
-                             QSpacerItem, QSizePolicy, QSlider, QSpinBox,
+                             QSpinBox,
                              QScrollArea, QRadioButton, QButtonGroup, QToolButton,
-                             QMessageBox)
-from PySide6.QtCore import Qt, Signal, QSize
-from PySide6.QtGui import QIcon, QPixmap
-from src.gui.widgets.icons import IconManager
+                             QMessageBox, QTextEdit)
+from PySide6.QtCore import Qt, Signal
 from src.logic.log.log_manager import logger, LogLevel
 from src.logic.config.config_manager import ConfigManager
 
@@ -217,7 +215,21 @@ class SettingsPage(QWidget):
         domain_left.setStretch(1, 1)
 
         # 右侧输入框
-        self.domain_edit = QLineEdit(self.domain)
+        self.domain_edit = QTextEdit()
+        self.domain_edit.setPlainText(self.domain)
+        self.domain_edit.setFixedHeight(60)
+        self.domain_edit.setStyleSheet("""
+            QTextEdit {
+                border: 1px solid #e0e0e0;
+                border-radius: 6px;
+                padding: 8px;
+                background: white;
+                selection-background-color: #41cd52;
+            }
+            QTextEdit:focus {
+                border: 1px solid #41cd52;
+            }
+        """)
 
         # 添加到水平布局
         domain_layout.addLayout(domain_left, 1)  # 左侧占1份
@@ -356,6 +368,7 @@ class SettingsPage(QWidget):
         self.imap_pass_edit = QLineEdit(self.imap_pass)
         self.imap_pass_edit.setEchoMode(QLineEdit.Password)
         self.imap_pass_edit.setPlaceholderText("•••••••••••••••")
+        self.imap_pass_edit.setFixedHeight(36)  # 使用固定高度
         self.imap_pass_edit.setStyleSheet("""
             QLineEdit {
                 border-top-right-radius: 0px;
@@ -368,6 +381,7 @@ class SettingsPage(QWidget):
         # 眼睛按钮
         self.imap_pass_toggle = QToolButton()
         self.imap_pass_toggle.setCursor(Qt.PointingHandCursor)
+        self.imap_pass_toggle.setFixedHeight(40)  # 使用固定高度
         self.imap_pass_toggle.setStyleSheet("""
             QToolButton {
                 border: 1px solid #e0e0e0;
@@ -375,8 +389,7 @@ class SettingsPage(QWidget):
                 background-color: white;
                 border-top-right-radius: 6px;
                 border-bottom-right-radius: 6px;
-                min-height: 36px;
-                padding: 0 8px;
+                padding: 0 6px;
             }
             QToolButton:hover {
                 background-color: #f8f8f8;
@@ -480,6 +493,7 @@ class SettingsPage(QWidget):
         self.temp_mail_epin_edit = QLineEdit(self.temp_mail_epin)
         self.temp_mail_epin_edit.setEchoMode(QLineEdit.Password)
         self.temp_mail_epin_edit.setPlaceholderText("•••••")
+        self.temp_mail_epin_edit.setFixedHeight(36)
         self.temp_mail_epin_edit.setStyleSheet("""
             QLineEdit {
                 border-top-right-radius: 0px;
@@ -492,6 +506,7 @@ class SettingsPage(QWidget):
         # 眼睛按钮
         self.temp_mail_epin_toggle = QToolButton()
         self.temp_mail_epin_toggle.setCursor(Qt.PointingHandCursor)
+        self.temp_mail_epin_toggle.setFixedHeight(40)
         self.temp_mail_epin_toggle.setStyleSheet("""
             QToolButton {
                 border: 1px solid #e0e0e0;
@@ -499,7 +514,6 @@ class SettingsPage(QWidget):
                 background-color: white;
                 border-top-right-radius: 6px;
                 border-bottom-right-radius: 6px;
-                min-height: 36px;
                 padding: 0 8px;
             }
             QToolButton:hover {
@@ -622,8 +636,8 @@ class SettingsPage(QWidget):
         headless_left.addWidget(browser_headless_desc)
 
         # 右侧单选按钮
-        radio_layout = QVBoxLayout()
-        radio_layout.setSpacing(5)  # 减小单选按钮之间的间距
+        radio_layout = QHBoxLayout()
+        radio_layout.setSpacing(10)  # 减小单选按钮之间的间距
 
         # 创建单选按钮组
         self.headless_group = QButtonGroup(self)
@@ -812,7 +826,7 @@ class SettingsPage(QWidget):
         network_group = QGroupBox("网络")
         network_layout = QVBoxLayout(network_group)
         network_layout.setContentsMargins(16, 16, 16, 16)  # 去除padding值
-        network_layout.setSpacing(15)
+        network_layout.setSpacing(20)
 
         # 代理设置
         proxy_layout = QHBoxLayout()
@@ -840,9 +854,10 @@ class SettingsPage(QWidget):
 
         # 添加代理地址和端口
         proxy_form = QFormLayout()
-        proxy_form.setContentsMargins(16, 16, 16, 16)  # 减小上边距
-        proxy_form.setHorizontalSpacing(20)
-        proxy_form.setVerticalSpacing(5)  # 减小表单项之间的间距
+        proxy_form.setVerticalSpacing(10)  # 减小表单项之间的垂直间距
+        proxy_form.setHorizontalSpacing(10)  # 减小标签和输入框之间的水平间距
+        proxy_form.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)  # 允许输入框扩展
+        proxy_form.setLabelAlignment(Qt.AlignLeft)  # 标签左对齐
 
         self.proxy_address_edit = QLineEdit(self.proxy_address)
         self.proxy_address_edit.setPlaceholderText("例如：127.0.0.1")
@@ -1106,9 +1121,7 @@ class SettingsPage(QWidget):
                     background-color: #484848;
                     border-top-right-radius: 6px;
                     border-bottom-right-radius: 6px;
-                    min-height: 36px;
                     padding: 0 8px;
-                    color: #e0e0e0;
                 }
                 QToolButton:hover {
                     background-color: #555555;
@@ -1122,9 +1135,7 @@ class SettingsPage(QWidget):
                     background-color: #484848;
                     border-top-right-radius: 6px;
                     border-bottom-right-radius: 6px;
-                    min-height: 36px;
                     padding: 0 8px;
-                    color: #e0e0e0;
                 }
                 QToolButton:hover {
                     background-color: #555555;
@@ -1352,7 +1363,6 @@ class SettingsPage(QWidget):
                     background-color: white;
                     border-top-right-radius: 6px;
                     border-bottom-right-radius: 6px;
-                    min-height: 36px;
                     padding: 0 8px;
                 }
                 QToolButton:hover {
@@ -1367,7 +1377,6 @@ class SettingsPage(QWidget):
                     background-color: white;
                     border-top-right-radius: 6px;
                     border-bottom-right-radius: 6px;
-                    min-height: 36px;
                     padding: 0 8px;
                 }
                 QToolButton:hover {
