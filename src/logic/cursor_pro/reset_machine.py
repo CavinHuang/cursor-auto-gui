@@ -3,7 +3,6 @@ import sys
 import json
 import uuid
 import hashlib
-import shutil
 from colorama import Fore, Style, init
 
 # 初始化colorama

@@ -1,6 +1,8 @@
+import threading
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                               QPushButton, QLabel, QTextEdit, QFrame, QMessageBox)
 from PySide6.QtCore import Qt
+from src.logic.cursor_pro.keep_alive import check_cursor_version, init_keep_alive, reset_machine_id
 from src.logic.log.log_manager import logger, LogLevel
 from src.logic.utils.admin_helper import is_admin
 import platform
@@ -190,19 +192,28 @@ class HomePage(QWidget):
     def reset_machine_code(self):
         """重置机器码"""
         logger.log("开始重置机器码...", LogLevel.INFO)
-        # 实际重置机器码的逻辑
-        logger.log("机器码重置成功！", LogLevel.INFO)
+        greater_than_0_45 = check_cursor_version()
+        reset_machine_id(greater_than_0_45)
 
     def register_new_account(self):
         """注册新账号"""
-        logger.log("开始执行完整注册流程...", LogLevel.INFO)
-        # 先重置机器码
-        logger.log("步骤1：重置机器码", LogLevel.INFO)
-        self.reset_machine_code()
-        # 再注册新账号
-        logger.log("步骤2：注册新账号", LogLevel.INFO)
-        # 实际注册新账号的逻辑
-        logger.log("完整注册流程执行完毕！", LogLevel.INFO)
+        logger.log("开始注册新账号...", LogLevel.INFO)
+        self.reg_button.configure(state="disabled", text="注册中...")
+        # 创建新线程执行重置操作
+        def reset_thread():
+            try:
+                init_keep_alive()
+                # 重置完成后，在主线程中更新UI
+                self.after(0, lambda: self.reg_button.configure(state="normal", text="立即注册账号"))
+            except Exception as e:
+                # 发生错误时，在主线程中更新UI
+                self.after(0, lambda: [
+                    self.reg_button.configure(state="normal", text="立即注册账号"),
+                    print(f"注册失败: {str(e)}")
+                ])
+
+        # 启动线程
+        threading.Thread(target=reset_thread, daemon=True).start()
 
     def set_theme(self, is_dark):
         """设置主题"""

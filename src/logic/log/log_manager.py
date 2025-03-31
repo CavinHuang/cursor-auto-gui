@@ -141,6 +141,20 @@ class LogManager:
             self.gui_logger.insertHtml(log_html + "<br>")
             self.gui_logger.ensureCursorVisible()
 
+    def info(self, message):
+        """记录INFO级别日志"""
+        self.log(message, LogLevel.INFO)
+    def debug(self, message):
+        """记录DEBUG级别日志"""
+        self.log(message, LogLevel.DEBUG)
+    def warning(self, message):
+        """记录WARNING级别日志"""
+        self.log(message, LogLevel.WARNING)
+
+    def error(self, message):
+        """记录ERROR级别日志"""
+        self.log(message, LogLevel.ERROR)
+
     def clean_old_logs(self, current_time):
         """清理超过时间窗口的日志记录"""
         expired_logs = []

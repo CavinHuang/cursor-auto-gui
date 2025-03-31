@@ -1,11 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('resources', 'resources'), ('config', 'config'), ('launcher.py', '.'), ('main.py', '.'), ('src', 'src')]
+datas = [('resources', 'resources'), ('config', 'config'), ('launcher.py', '.'), ('main.py', '.')]
 binaries = []
 hiddenimports = ['PySide6.QtSvg', 'PySide6.QtXml', 'hashlib', 'json', 'src', 'src.main']
-tmp_ret = collect_all('src')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+#tmp_ret = collect_all('src')
+#datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(

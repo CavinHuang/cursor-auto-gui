@@ -12,6 +12,7 @@ from src.logic.cursor_pro.get_email_code import EmailVerificationHandler
 from src.logic.cursor_pro.reset_machine import MachineIDResetter
 from src.logic.log import logger
 from fake_useragent import UserAgent
+from src.logic.log.log_manager import LogLevel
 from src.utils.browser_utils import BrowserManager
 
 def check_cursor_version():
@@ -19,6 +20,7 @@ def check_cursor_version():
     pkg_path, main_path = patch_cursor_get_machine_id.get_cursor_paths()
     with open(pkg_path, "r", encoding="utf-8") as f:
         version = json.load(f)["version"]
+    logger.log(f"cursor版本: {version}", LogLevel.INFO)
     return patch_cursor_get_machine_id.version_check(version, min_version="0.45.0")
 
 def get_cursor_session_token(tab, max_attempts=3, retry_interval=2):

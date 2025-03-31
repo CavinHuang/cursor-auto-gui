@@ -32,3 +32,4 @@ def get_platform_info():
         "platform": platform.system(),
         "platform_version": platform.version(),
     }
+
