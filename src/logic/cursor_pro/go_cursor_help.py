@@ -12,17 +12,31 @@ def go_cursor_help():
 
     if system == "Darwin":  # macOS
         cmd = f'curl -fsSL {base_url}/cursor_mac_id_modifier.sh | sudo bash'
-        logger.info("执行macOS命令")
-        os.system(cmd)
+        logger.info(f"执行macOS命令: {cmd}")
+        try:
+            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            logger.info(f"命令执行输出: {output.decode()}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"命令执行失败: {e.output.decode()}")
+            return False
     elif system == "Linux":
         cmd = f'curl -fsSL {base_url}/cursor_linux_id_modifier.sh | sudo bash'
-        logger.info("执行Linux命令")
-        os.system(cmd)
+        logger.info(f"执行Linux命令: {cmd}")
+        try:
+            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            logger.info(f"命令执行输出: {output.decode()}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"命令执行失败: {e.output.decode()}")
+            return False
     elif system == "Windows":
         cmd = f'irm {base_url}/cursor_win_id_modifier.ps1 | iex'
-        logger.info("执行Windows命令")
-        # 在Windows上使用PowerShell执行命令
-        subprocess.run(["powershell", "-Command", cmd], shell=True)
+        logger.info(f"执行Windows命令: {cmd}")
+        try:
+            output = subprocess.check_output(["powershell", "-Command", cmd], stderr=subprocess.STDOUT)
+            logger.info(f"命令执行输出: {output.decode()}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"命令执行失败: {e.output.decode()}")
+            return False
     else:
         logger.error(f"不支持的操作系统: {system}")
         return False

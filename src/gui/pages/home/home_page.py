@@ -193,7 +193,14 @@ class HomePage(QWidget):
         """重置机器码"""
         logger.log("开始重置机器码...", LogLevel.INFO)
         greater_than_0_45 = check_cursor_version()
-        reset_machine_id(greater_than_0_45)
+        def reset_thread():
+            try:
+                reset_machine_id(greater_than_0_45)
+            except Exception as e:
+                logger.log(f"重置机器码失败: {str(e)}", LogLevel.ERROR)
+
+        # 启动线程
+        threading.Thread(target=reset_thread, daemon=True).start()
 
     def register_new_account(self):
         """注册新账号"""
