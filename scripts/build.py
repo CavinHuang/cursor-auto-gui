@@ -102,8 +102,6 @@ def build_mac():
         '--add-data=config:config',
         '--add-data=launcher.py:.',
         '--add-data=main.py:.',
-        '--add-data=src:src',  # 添加src目录
-        '--collect-all=src',   # 收集src模块的所有文件
         '--hidden-import=PySide6.QtSvg',
         '--hidden-import=PySide6.QtXml',
         '--hidden-import=hashlib',
@@ -127,19 +125,6 @@ def build_mac():
         dest_plist = os.path.join(dist_dir, 'Contents', 'Info.plist')
         shutil.copy2(info_plist_path, dest_plist)
         print(f"已复制Info.plist: {dest_plist}")
-
-        # 确保src目录被正确打包
-        src_dir = os.path.join(dist_dir, 'Contents/Resources/src')
-        if not os.path.exists(src_dir):
-            print("警告: src目录可能未被正确打包")
-            # 复制src目录
-            try:
-                src_origin = os.path.join(ROOT_DIR, 'src')
-                if os.path.exists(src_origin):
-                    shutil.copytree(src_origin, src_dir)
-                    print(f"已手动复制src目录: {src_dir}")
-            except Exception as e:
-                print(f"复制src目录失败: {e}")
 
     print("macOS应用程序构建完成!")
 
@@ -193,8 +178,6 @@ def build_windows():
         '--add-data=config;config',
         '--add-data=launcher.py;.',
         '--add-data=main.py;.',
-        '--add-data=src;src',  # 添加src目录
-        '--collect-all=src',   # 收集src模块的所有文件
         '--hidden-import=PySide6.QtSvg',
         '--hidden-import=PySide6.QtXml',
         '--hidden-import=hashlib',
@@ -262,8 +245,6 @@ def build_linux():
         '--add-data=config:config',
         '--add-data=launcher.py:.',
         '--add-data=main.py:.',
-        '--add-data=src:src',  # 添加src目录
-        '--collect-all=src',   # 收集src模块的所有文件
         '--hidden-import=PySide6.QtSvg',
         '--hidden-import=PySide6.QtXml',
         '--hidden-import=hashlib',
