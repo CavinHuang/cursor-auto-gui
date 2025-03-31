@@ -56,6 +56,7 @@ a = Analysis(
         'hashlib',
         'json',
         'logging',
+        'logging.handlers',  # 添加日志处理器模块
         'datetime',
         'tempfile',
         'platform',
@@ -66,7 +67,44 @@ a = Analysis(
         'sys',
         'pathlib',
         'poplib',
+        'enum',  # 添加枚举模块，用于LogLevel
+
+        # 缺失的依赖模块
         'DrissionPage',
+        '_scproxy',
+
+        # 数据处理相关模块
+        'openpyxl',
+        'openpyxl.worksheet',
+        'openpyxl.worksheet._reader',
+        'openpyxl.workbook',
+        'openpyxl.styles',
+        'openpyxl.cell',
+        'openpyxl.utils',
+        'DataRecorder',
+        'DataRecorder.base',
+        'DataRecorder.byte_recorder',
+        'DataRecorder.setter',
+
+        # 网络和HTTP相关模块
+        'urllib',
+        'urllib.request',
+        'urllib.parse',
+        'urllib.error',
+        'http',
+        'http.client',
+        'http.cookiejar',
+        'http.cookies',
+        'requests',
+        'requests.adapters',
+        'requests.auth',
+        'requests.cookies',
+        'requests.exceptions',
+        'requests.hooks',
+        'requests.models',
+        'requests.packages',
+        'requests.structures',
+        'requests.utils',
 
         # 邮件相关模块
         'imaplib',
@@ -90,17 +128,18 @@ a = Analysis(
         'src.gui.pages.about',
         'src.logic',
         'src.logic.utils.admin_helper',
+        'src.logic.log',
         'src.logic.log.log_manager',
         'src.logic.cursor_pro.keep_alive',
         'src.logic.cursor_pro.get_email_code',
+        'src.utils',
+        'src.utils.browser_utils',
 
         # 其他可能用到的模块
         'threading',
         'queue',
         'socket',
         'ssl',
-        'urllib',
-        'urllib.request',
         'json',
         'base64',
         're',

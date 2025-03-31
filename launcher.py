@@ -28,34 +28,58 @@ ENV_SKIP_ADMIN_CHECK = "CURSOR_PRO_SKIP_ADMIN"  # 跳过管理员权限检查的
 ENV_RESTARTED_AS_ADMIN = "CURSOR_PRO_RESTARTED" # 以管理员权限重启的环境变量
 ENV_LOG_FILE = "CURSOR_PRO_LOG_FILE"            # 日志文件路径的环境变量
 
+# 导入日志管理器
+try:
+    # 尝试导入日志管理器
+    from src.logic.log.log_manager import logger, LogLevel
+    _has_log_manager = True
+except ImportError:
+    _has_log_manager = False
+    # 如果导入失败，将继续使用基本日志设置
+
 # 设置日志记录
 def setup_logging():
     """设置日志记录"""
     os.makedirs(LOG_DIR, exist_ok=True)
     log_file = os.path.join(LOG_DIR, f"cursor_pro_launcher_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
 
-    # 配置日志格式
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s [%(levelname)s] %(message)s',
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler()
-        ]
-    )
+    if _has_log_manager:
+        # 使用LogManager设置文件日志
+        log_file = logger.set_file_logger(LOG_DIR, log_file=None)
+        logger.info("===== Cursor Pro 启动器日志开始 =====")
+        logger.info(f"操作系统: {platform.system()} {platform.version()}")
+        logger.info(f"Python版本: {sys.version}")
+        logger.info(f"工作目录: {os.getcwd()}")
+        logger.info(f"启动参数: {sys.argv}")
+        logger.info(f"是否为打包环境: {IS_FROZEN}")
+        if IS_FROZEN:
+            logger.info(f"MEIPASS路径: {sys._MEIPASS}")
+    else:
+        # 配置基本日志格式
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format='%(asctime)s [%(levelname)s] %(message)s',
+            handlers=[
+                logging.FileHandler(log_file),
+                logging.StreamHandler()
+            ]
+        )
 
-    logging.info("===== Cursor Pro 启动器日志开始 =====")
-    logging.info(f"操作系统: {platform.system()} {platform.version()}")
-    logging.info(f"Python版本: {sys.version}")
-    logging.info(f"工作目录: {os.getcwd()}")
-    logging.info(f"启动参数: {sys.argv}")
-    logging.info(f"是否为打包环境: {IS_FROZEN}")
-    if IS_FROZEN:
-        logging.info(f"MEIPASS路径: {sys._MEIPASS}")
+        logging.info("===== Cursor Pro 启动器日志开始 =====")
+        logging.info(f"操作系统: {platform.system()} {platform.version()}")
+        logging.info(f"Python版本: {sys.version}")
+        logging.info(f"工作目录: {os.getcwd()}")
+        logging.info(f"启动参数: {sys.argv}")
+        logging.info(f"是否为打包环境: {IS_FROZEN}")
+        if IS_FROZEN:
+            logging.info(f"MEIPASS路径: {sys._MEIPASS}")
 
     # 将日志文件路径保存到环境变量，便于主程序访问
     os.environ[ENV_LOG_FILE] = log_file
-    logging.info(f"设置环境变量 {ENV_LOG_FILE}={log_file}")
+    if _has_log_manager:
+        logger.info(f"设置环境变量 {ENV_LOG_FILE}={log_file}")
+    else:
+        logging.info(f"设置环境变量 {ENV_LOG_FILE}={log_file}")
 
     return log_file
 
@@ -65,7 +89,10 @@ def get_app_path():
     if IS_FROZEN:
         if platform.system() == 'Darwin':  # macOS
             app_path = os.path.abspath(sys.executable)
-            logging.debug(f"macOS打包环境初始可执行文件路径: {app_path}")
+            if _has_log_manager:
+                logger.debug(f"macOS打包环境初始可执行文件路径: {app_path}")
+            else:
+                logging.debug(f"macOS打包环境初始可执行文件路径: {app_path}")
             while not app_path.endswith('.app') and app_path != '/':
                 app_path = os.path.dirname(app_path)
             result_path = app_path if app_path != '/' else os.path.dirname(sys.executable)
@@ -74,18 +101,28 @@ def get_app_path():
     else:
         result_path = os.path.dirname(os.path.abspath(__file__))
 
-    logging.info(f"应用程序路径: {result_path}")
+    if _has_log_manager:
+        logger.info(f"应用程序路径: {result_path}")
+    else:
+        logging.info(f"应用程序路径: {result_path}")
     return result_path
 
 # 检查当前是否具有管理员权限
 def is_admin():
     """检查当前是否具有管理员权限"""
     try:
-        logging.info(f"检查管理员权限: 操作系统 {platform.system()}")
+        if _has_log_manager:
+            logger.info(f"检查管理员权限: 操作系统 {platform.system()}")
+        else:
+            logging.info(f"检查管理员权限: 操作系统 {platform.system()}")
+
         if platform.system() == 'Windows':
             import ctypes
             is_admin_result = ctypes.windll.shell32.IsUserAnAdmin() != 0
-            logging.info(f"Windows管理员权限检查结果: {is_admin_result}")
+            if _has_log_manager:
+                logger.info(f"Windows管理员权限检查结果: {is_admin_result}")
+            else:
+                logging.info(f"Windows管理员权限检查结果: {is_admin_result}")
             return is_admin_result
         elif platform.system() == 'Darwin':  # macOS
             try:
@@ -96,33 +133,55 @@ def is_admin():
                     check=False
                 )
                 is_admin_result = result.returncode == 0
-                logging.info(f"macOS管理员权限检查结果: {is_admin_result}, 返回码: {result.returncode}")
+                if _has_log_manager:
+                    logger.info(f"macOS管理员权限检查结果: {is_admin_result}, 返回码: {result.returncode}")
+                else:
+                    logging.info(f"macOS管理员权限检查结果: {is_admin_result}, 返回码: {result.returncode}")
                 return is_admin_result
             except Exception as e:
-                logging.warning(f"检查macOS管理员权限失败: {e}")
+                if _has_log_manager:
+                    logger.warning(f"检查macOS管理员权限失败: {e}")
+                else:
+                    logging.warning(f"检查macOS管理员权限失败: {e}")
                 return False
         else:  # Linux
             is_admin_result = os.geteuid() == 0
-            logging.info(f"Linux管理员权限检查结果: {is_admin_result}, euid: {os.geteuid()}")
+            if _has_log_manager:
+                logger.info(f"Linux管理员权限检查结果: {is_admin_result}, euid: {os.geteuid()}")
+            else:
+                logging.info(f"Linux管理员权限检查结果: {is_admin_result}, euid: {os.geteuid()}")
             return is_admin_result
     except Exception as e:
-        logging.error(f"检查管理员权限时出错: {e}")
-        logging.error(traceback.format_exc())
+        if _has_log_manager:
+            logger.error(f"检查管理员权限时出错: {e}")
+            logger.error(traceback.format_exc())
+        else:
+            logging.error(f"检查管理员权限时出错: {e}")
+            logging.error(traceback.format_exc())
         return False
 
 # 在macOS中查找应用包中的可执行文件
 def find_executable_in_app(app_path):
     """在macOS应用包中查找可执行文件"""
-    logging.info(f"在macOS应用包中查找可执行文件: {app_path}")
+    if _has_log_manager:
+        logger.info(f"在macOS应用包中查找可执行文件: {app_path}")
+    else:
+        logging.info(f"在macOS应用包中查找可执行文件: {app_path}")
 
     if not app_path.endswith('.app'):
-        logging.warning(f"路径不是.app包: {app_path}")
+        if _has_log_manager:
+            logger.warning(f"路径不是.app包: {app_path}")
+        else:
+            logging.warning(f"路径不是.app包: {app_path}")
         return None
 
     # MacOS目录
     macos_dir = os.path.join(app_path, "Contents/MacOS")
     if not os.path.exists(macos_dir):
-        logging.error(f"MacOS目录不存在: {macos_dir}")
+        if _has_log_manager:
+            logger.error(f"MacOS目录不存在: {macos_dir}")
+        else:
+            logging.error(f"MacOS目录不存在: {macos_dir}")
         return None
 
     # 尝试查找与应用名称相同的可执行文件
@@ -130,17 +189,26 @@ def find_executable_in_app(app_path):
     exe_path = os.path.join(macos_dir, app_name)
 
     if os.path.isfile(exe_path) and os.access(exe_path, os.X_OK):
-        logging.info(f"找到匹配应用名称的可执行文件: {exe_path}")
+        if _has_log_manager:
+            logger.info(f"找到匹配应用名称的可执行文件: {exe_path}")
+        else:
+            logging.info(f"找到匹配应用名称的可执行文件: {exe_path}")
         return exe_path
 
     # 查找任何可执行文件
     for item in os.listdir(macos_dir):
         file_path = os.path.join(macos_dir, item)
         if os.path.isfile(file_path) and os.access(file_path, os.X_OK):
-            logging.info(f"找到可执行文件: {file_path}")
+            if _has_log_manager:
+                logger.info(f"找到可执行文件: {file_path}")
+            else:
+                logging.info(f"找到可执行文件: {file_path}")
             return file_path
 
-    logging.error(f"在{macos_dir}中未找到可执行文件")
+    if _has_log_manager:
+        logger.error(f"在{macos_dir}中未找到可执行文件")
+    else:
+        logging.error(f"在{macos_dir}中未找到可执行文件")
     return None
 
 # 以管理员权限重启程序
@@ -157,8 +225,12 @@ def restart_as_admin(password=None):
         if ENV_LOG_FILE in os.environ:
             env[ENV_LOG_FILE] = os.environ[ENV_LOG_FILE]
 
-        logging.info(f"尝试以管理员权限重启程序: {current_path}")
-        logging.info(f"设置环境变量 {ENV_RESTARTED_AS_ADMIN}=1")
+        if _has_log_manager:
+            logger.info(f"尝试以管理员权限重启程序: {current_path}")
+            logger.info(f"设置环境变量 {ENV_RESTARTED_AS_ADMIN}=1")
+        else:
+            logging.info(f"尝试以管理员权限重启程序: {current_path}")
+            logging.info(f"设置环境变量 {ENV_RESTARTED_AS_ADMIN}=1")
 
         if platform.system() == 'Windows':
             # Windows: 使用ShellExecute以管理员权限启动
@@ -188,7 +260,10 @@ def restart_as_admin(password=None):
                         if app_path.endswith('.app'):
                             exe_path = find_executable_in_app(app_path)
                             if not exe_path:
-                                logging.error("在.app中找不到可执行文件，重启失败")
+                                if _has_log_manager:
+                                    logger.error("在.app中找不到可执行文件，重启失败")
+                                else:
+                                    logging.error("在.app中找不到可执行文件，重启失败")
                                 return False
 
                             # 写入脚本内容，包含环境变量设置
@@ -222,13 +297,19 @@ echo {password} | sudo -S "{sys.executable}" "{current_path}"
                     try:
                         os.unlink(script_path)
                     except Exception as e:
-                        logging.error(f"删除临时脚本失败: {e}")
+                        if _has_log_manager:
+                            logger.error(f"删除临时脚本失败: {e}")
+                        else:
+                            logging.error(f"删除临时脚本失败: {e}")
 
                 timer = QTimer()
                 timer.singleShot(3000, delayed_delete)
                 return True
             else:
-                logging.error("macOS环境需要密码才能以管理员权限重启，但未提供密码")
+                if _has_log_manager:
+                    logger.error("macOS环境需要密码才能以管理员权限重启，但未提供密码")
+                else:
+                    logging.error("macOS环境需要密码才能以管理员权限重启，但未提供密码")
                 return False
 
         elif platform.system() == 'Linux':  # Linux
@@ -262,27 +343,43 @@ echo {password} | sudo -S "{sys.executable}" "{current_path}"
                     try:
                         os.unlink(script_path)
                     except Exception as e:
-                        logging.error(f"删除临时脚本失败: {e}")
+                        if _has_log_manager:
+                            logger.error(f"删除临时脚本失败: {e}")
+                        else:
+                            logging.error(f"删除临时脚本失败: {e}")
 
                 timer = QTimer()
                 timer.singleShot(3000, delayed_delete)
                 return True
             else:
-                logging.error("Linux环境需要密码才能以管理员权限重启，但未提供密码")
+                if _has_log_manager:
+                    logger.error("Linux环境需要密码才能以管理员权限重启，但未提供密码")
+                else:
+                    logging.error("Linux环境需要密码才能以管理员权限重启，但未提供密码")
                 return False
     except Exception as e:
-        logging.error(f"以管理员权限重启程序时出错: {e}")
-        logging.error(traceback.format_exc())
+        if _has_log_manager:
+            logger.error(f"以管理员权限重启程序时出错: {e}")
+            logger.error(traceback.format_exc())
+        else:
+            logging.error(f"以管理员权限重启程序时出错: {e}")
+            logging.error(traceback.format_exc())
         return False
 
 # 验证系统管理员密码
 def verify_system_admin_password(password):
     """验证系统管理员密码"""
     try:
-        logging.info("验证系统管理员密码")
+        if _has_log_manager:
+            logger.info("验证系统管理员密码")
+        else:
+            logging.info("验证系统管理员密码")
         if platform.system() == 'Windows':
             # Windows验证管理员密码比较复杂，一般通过UAC提升权限
-            logging.info("Windows平台：跳过密码验证，将通过UAC提升权限")
+            if _has_log_manager:
+                logger.info("Windows平台：跳过密码验证，将通过UAC提升权限")
+            else:
+                logging.info("Windows平台：跳过密码验证，将通过UAC提升权限")
             return True
         elif platform.system() == 'Darwin':  # macOS
             # 使用sudo -S -v验证密码
@@ -290,7 +387,10 @@ def verify_system_admin_password(password):
                 cmd = f'echo {password} | sudo -S -v 2>{temp.name}'
                 result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
                 verified = result.returncode == 0
-                logging.info(f"macOS密码验证结果: {'成功' if verified else '失败'}, 返回码: {result.returncode}")
+                if _has_log_manager:
+                    logger.info(f"macOS密码验证结果: {'成功' if verified else '失败'}, 返回码: {result.returncode}")
+                else:
+                    logging.info(f"macOS密码验证结果: {'成功' if verified else '失败'}, 返回码: {result.returncode}")
                 return verified
         else:  # Linux
             # 使用sudo -S -v验证密码
@@ -298,11 +398,18 @@ def verify_system_admin_password(password):
                 cmd = f'echo {password} | sudo -S -v 2>{temp.name}'
                 result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
                 verified = result.returncode == 0
-                logging.info(f"Linux密码验证结果: {'成功' if verified else '失败'}, 返回码: {result.returncode}")
+                if _has_log_manager:
+                    logger.info(f"Linux密码验证结果: {'成功' if verified else '失败'}, 返回码: {result.returncode}")
+                else:
+                    logging.info(f"Linux密码验证结果: {'成功' if verified else '失败'}, 返回码: {result.returncode}")
                 return verified
     except Exception as e:
-        logging.error(f"验证系统管理员密码时出错: {e}")
-        logging.error(traceback.format_exc())
+        if _has_log_manager:
+            logger.error(f"验证系统管理员密码时出错: {e}")
+            logger.error(traceback.format_exc())
+        else:
+            logging.error(f"验证系统管理员密码时出错: {e}")
+            logging.error(traceback.format_exc())
         return False
 
 class AdminAuthDialog(QDialog):
@@ -505,85 +612,148 @@ def create_styled_message_box(parent, title, text, icon_type=QMessageBox.Warning
 
 def start_main_program():
     """启动主程序（单一入口点）"""
-    logging.info("======= 开始启动主程序 =======")
+    if _has_log_manager:
+        logger.info("======= 开始启动主程序 =======")
+    else:
+        logging.info("======= 开始启动主程序 =======")
 
     try:
         # 设置必要的环境变量
         os.environ[ENV_SKIP_ADMIN_CHECK] = "1"
-        logging.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1")
+        if _has_log_manager:
+            logger.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1")
+        else:
+            logging.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1")
 
         # 确保源代码目录在路径中
         if IS_FROZEN:
             # 添加必要的路径到sys.path
             if sys._MEIPASS not in sys.path:
                 sys.path.insert(0, sys._MEIPASS)
-                logging.info(f"已添加MEIPASS路径到sys.path: {sys._MEIPASS}")
+                if _has_log_manager:
+                    logger.info(f"已添加MEIPASS路径到sys.path: {sys._MEIPASS}")
+                else:
+                    logging.info(f"已添加MEIPASS路径到sys.path: {sys._MEIPASS}")
 
             # 添加src目录到sys.path
             src_path = os.path.join(sys._MEIPASS, 'src')
             if os.path.exists(src_path) and src_path not in sys.path:
                 sys.path.insert(0, src_path)
-                logging.info(f"已添加src路径到sys.path: {src_path}")
+                if _has_log_manager:
+                    logger.info(f"已添加src路径到sys.path: {src_path}")
+                else:
+                    logging.info(f"已添加src路径到sys.path: {src_path}")
         else:
             # 开发环境
             current_dir = os.path.dirname(os.path.abspath(__file__))
             if current_dir not in sys.path:
                 sys.path.insert(0, current_dir)
-                logging.info(f"已添加当前目录到sys.path: {current_dir}")
+                if _has_log_manager:
+                    logger.info(f"已添加当前目录到sys.path: {current_dir}")
+                else:
+                    logging.info(f"已添加当前目录到sys.path: {current_dir}")
 
             src_path = os.path.join(current_dir, 'src')
             if os.path.exists(src_path) and src_path not in sys.path:
                 sys.path.insert(0, src_path)
-                logging.info(f"已添加src路径到sys.path: {src_path}")
+                if _has_log_manager:
+                    logger.info(f"已添加src路径到sys.path: {src_path}")
+                else:
+                    logging.info(f"已添加src路径到sys.path: {src_path}")
 
-        logging.info("当前sys.path:")
-        for p in sys.path:
-            logging.info(f"  - {p}")
+        if _has_log_manager:
+            logger.info("当前sys.path:")
+            for p in sys.path:
+                logger.info(f"  - {p}")
+        else:
+            logging.info("当前sys.path:")
+            for p in sys.path:
+                logging.info(f"  - {p}")
 
         # 直接导入main.py
         try:
-            logging.info("尝试导入main模块...")
+            if _has_log_manager:
+                logger.info("尝试导入main模块...")
+            else:
+                logging.info("尝试导入main模块...")
 
             # 将当前工作目录设置为应用程序所在目录，避免相对导入问题
             app_dir = get_app_path()
             os.chdir(app_dir)
-            logging.info(f"已将工作目录设置为: {app_dir}")
+            if _has_log_manager:
+                logger.info(f"已将工作目录设置为: {app_dir}")
+            else:
+                logging.info(f"已将工作目录设置为: {app_dir}")
 
             # 先尝试导入src.main
             try:
-                logging.info("尝试导入src.main模块...")
+                if _has_log_manager:
+                    logger.info("尝试导入src.main模块...")
+                else:
+                    logging.info("尝试导入src.main模块...")
                 from src.main import main as main_entry_point
-                logging.info("成功导入src.main模块")
+                if _has_log_manager:
+                    logger.info("成功导入src.main模块")
+                else:
+                    logging.info("成功导入src.main模块")
             except ImportError as e:
-                logging.warning(f"导入src.main失败: {e}")
+                if _has_log_manager:
+                    logger.warning(f"导入src.main失败: {e}")
+                else:
+                    logging.warning(f"导入src.main失败: {e}")
 
                 # 再尝试直接导入main
                 try:
-                    logging.info("尝试直接导入main模块...")
+                    if _has_log_manager:
+                        logger.info("尝试直接导入main模块...")
+                    else:
+                        logging.info("尝试直接导入main模块...")
                     import main
                     main_entry_point = main.main
-                    logging.info("成功导入main模块")
+                    if _has_log_manager:
+                        logger.info("成功导入main模块")
+                    else:
+                        logging.info("成功导入main模块")
                 except ImportError as e:
-                    logging.error(f"导入main模块失败: {e}")
+                    if _has_log_manager:
+                        logger.error(f"导入main模块失败: {e}")
+                    else:
+                        logging.error(f"导入main模块失败: {e}")
                     raise ImportError("无法导入主模块，请确保main.py文件存在且可访问")
 
-            logging.info("正在调用主程序入口函数...")
+            if _has_log_manager:
+                logger.info("正在调用主程序入口函数...")
+            else:
+                logging.info("正在调用主程序入口函数...")
             # 调用主程序入口函数
             exit_code = main_entry_point()
-            logging.info(f"主程序执行完成，退出代码: {exit_code}")
+            if _has_log_manager:
+                logger.info(f"主程序执行完成，退出代码: {exit_code}")
+            else:
+                logging.info(f"主程序执行完成，退出代码: {exit_code}")
             return exit_code
 
         except Exception as e:
-            logging.error(f"导入或执行主模块时出错: {e}")
-            logging.error(traceback.format_exc())
+            if _has_log_manager:
+                logger.error(f"导入或执行主模块时出错: {e}")
+                logger.error(traceback.format_exc())
+            else:
+                logging.error(f"导入或执行主模块时出错: {e}")
+                logging.error(traceback.format_exc())
 
             # 如果直接导入失败，尝试以子进程方式启动
-            logging.warning("直接导入失败，尝试以子进程方式启动...")
+            if _has_log_manager:
+                logger.warning("直接导入失败，尝试以子进程方式启动...")
+            else:
+                logging.warning("直接导入失败，尝试以子进程方式启动...")
 
             # 构建环境变量
             env = os.environ.copy()
             env[ENV_SKIP_ADMIN_CHECK] = "1"
-            logging.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1 用于子进程")
+            if _has_log_manager:
+                logger.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1 用于子进程")
+            else:
+                logging.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1 用于子进程")
 
             # 构建命令
             if IS_FROZEN:
@@ -606,12 +776,21 @@ def start_main_program():
                 main_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'main.py')
                 cmd = [sys.executable, main_path]
 
-            logging.info(f"启动命令: {cmd}")
+            if _has_log_manager:
+                logger.info(f"启动命令: {cmd}")
+            else:
+                logging.info(f"启动命令: {cmd}")
 
             # 启动主程序
-            logging.info("正在启动主程序子进程...")
+            if _has_log_manager:
+                logger.info("正在启动主程序子进程...")
+            else:
+                logging.info("正在启动主程序子进程...")
             process = subprocess.Popen(cmd, env=env)
-            logging.info(f"子进程已启动，PID: {process.pid}")
+            if _has_log_manager:
+                logger.info(f"子进程已启动，PID: {process.pid}")
+            else:
+                logging.info(f"子进程已启动，PID: {process.pid}")
 
             # 等待一小段时间，检查进程是否成功启动
             import time
@@ -620,22 +799,42 @@ def start_main_program():
             poll_result = process.poll()
             if poll_result is None:
                 # 进程仍在运行，说明启动成功
-                logging.info("主程序进程启动成功，仍在运行")
+                if _has_log_manager:
+                    logger.info("主程序进程启动成功，仍在运行")
+                else:
+                    logging.info("主程序进程启动成功，仍在运行")
                 return 0
             else:
                 # 进程已退出，说明启动失败
-                logging.error(f"主程序进程启动失败，已退出，退出代码: {poll_result}")
+                if _has_log_manager:
+                    logger.error(f"主程序进程启动失败，已退出，退出代码: {poll_result}")
+                else:
+                    logging.error(f"主程序进程启动失败，已退出，退出代码: {poll_result}")
                 return 1
     except Exception as e:
-        logging.error(f"启动主程序时出错: {e}")
-        logging.error(traceback.format_exc())
+        if _has_log_manager:
+            logger.error(f"启动主程序时出错: {e}")
+            logger.error(traceback.format_exc())
+        else:
+            logging.error(f"启动主程序时出错: {e}")
+            logging.error(traceback.format_exc())
         return 1
 
 def main():
     """启动器主函数 - 单一入口点"""
     # 初始化日志
     log_file = setup_logging()
-    logging.info("========= 启动器主函数开始执行 =========")
+    if _has_log_manager:
+        logger.info("========= 启动器主函数开始执行 =========")
+    else:
+        logging.info("========= 启动器主函数开始执行 =========")
+
+    # 清理旧日志文件（保留30天）
+    if _has_log_manager:
+        try:
+            logger.clean_old_log_files(LOG_DIR, 30)
+        except Exception as e:
+            logger.warning(f"清理旧日志文件失败: {e}")
 
     # 检查环境变量，确定启动状态
     was_restarted = os.environ.get(ENV_RESTARTED_AS_ADMIN) == "1"
@@ -643,19 +842,31 @@ def main():
 
     # 记录当前状态
     if was_restarted:
-        logging.info(f"检测到环境变量 {ENV_RESTARTED_AS_ADMIN}=1，程序已以管理员权限重启")
+        if _has_log_manager:
+            logger.info(f"检测到环境变量 {ENV_RESTARTED_AS_ADMIN}=1，程序已以管理员权限重启")
+        else:
+            logging.info(f"检测到环境变量 {ENV_RESTARTED_AS_ADMIN}=1，程序已以管理员权限重启")
     if skip_admin_check:
-        logging.info(f"检测到环境变量 {ENV_SKIP_ADMIN_CHECK}=1，将跳过管理员权限检查")
+        if _has_log_manager:
+            logger.info(f"检测到环境变量 {ENV_SKIP_ADMIN_CHECK}=1，将跳过管理员权限检查")
+        else:
+            logging.info(f"检测到环境变量 {ENV_SKIP_ADMIN_CHECK}=1，将跳过管理员权限检查")
 
     # 检查是否已经有管理员权限或是否需要跳过管理员权限检查
     has_admin = is_admin()
 
     if has_admin or skip_admin_check or was_restarted:
-        logging.info("已具有管理员权限或跳过权限检查，直接启动主程序...")
+        if _has_log_manager:
+            logger.info("已具有管理员权限或跳过权限检查，直接启动主程序...")
+        else:
+            logging.info("已具有管理员权限或跳过权限检查，直接启动主程序...")
         return start_main_program()
 
     # 创建应用程序实例
-    logging.info("创建Qt应用程序实例")
+    if _has_log_manager:
+        logger.info("创建Qt应用程序实例")
+    else:
+        logging.info("创建Qt应用程序实例")
     app = QApplication(sys.argv)
 
     # 设置应用程序图标（如果有的话）
@@ -664,16 +875,28 @@ def main():
     fallback_icon_path = os.path.join(app_path, 'resources', 'icons', 'app_icon.ico')
 
     if os.path.exists(icon_path):
-        logging.info(f"设置应用图标: {icon_path}")
+        if _has_log_manager:
+            logger.info(f"设置应用图标: {icon_path}")
+        else:
+            logging.info(f"设置应用图标: {icon_path}")
         app.setWindowIcon(QIcon(icon_path))
     elif os.path.exists(fallback_icon_path):
-        logging.info(f"使用备用应用图标: {fallback_icon_path}")
+        if _has_log_manager:
+            logger.info(f"使用备用应用图标: {fallback_icon_path}")
+        else:
+            logging.info(f"使用备用应用图标: {fallback_icon_path}")
         app.setWindowIcon(QIcon(fallback_icon_path))
     else:
-        logging.warning("找不到应用图标")
+        if _has_log_manager:
+            logger.warning("找不到应用图标")
+        else:
+            logging.warning("找不到应用图标")
 
     # 设置应用程序样式
-    logging.info("设置应用程序样式为Fusion")
+    if _has_log_manager:
+        logger.info("设置应用程序样式为Fusion")
+    else:
+        logging.info("设置应用程序样式为Fusion")
     app.setStyle("Fusion")
 
     # 创建管理员权限验证对话框
@@ -686,54 +909,90 @@ def main():
     dialog.move(x, y)
 
     # 显示对话框
-    logging.info("显示对话框，等待用户输入密码...")
+    if _has_log_manager:
+        logger.info("显示对话框，等待用户输入密码...")
+    else:
+        logging.info("显示对话框，等待用户输入密码...")
     result = dialog.exec()
-    logging.info(f"对话框结果: {result} (接受={QDialog.Accepted}, 拒绝={QDialog.Rejected})")
+    if _has_log_manager:
+        logger.info(f"对话框结果: {result} (接受={QDialog.Accepted}, 拒绝={QDialog.Rejected})")
+    else:
+        logging.info(f"对话框结果: {result} (接受={QDialog.Accepted}, 拒绝={QDialog.Rejected})")
 
     if result == QDialog.Accepted:
         # 验证成功，以管理员权限重启程序
-        logging.info("管理员权限验证成功，正在以管理员权限重启程序...")
+        if _has_log_manager:
+            logger.info("管理员权限验证成功，正在以管理员权限重启程序...")
+        else:
+            logging.info("管理员权限验证成功，正在以管理员权限重启程序...")
 
         # 获取输入的密码(Windows平台不需要)
         admin_password = getattr(dialog, 'admin_password', None) if platform.system() != 'Windows' else None
-        logging.info(f"获取管理员密码: {'成功' if admin_password else '无需密码或未提供'}")
+        if _has_log_manager:
+            logger.info(f"获取管理员密码: {'成功' if admin_password else '无需密码或未提供'}")
+        else:
+            logging.info(f"获取管理员密码: {'成功' if admin_password else '无需密码或未提供'}")
 
         if restart_as_admin(admin_password):
-            logging.info("以管理员权限重启成功")
+            if _has_log_manager:
+                logger.info("以管理员权限重启成功")
+            else:
+                logging.info("以管理员权限重启成功")
             return 0
         else:
             # 重启失败，尝试直接启动
-            logging.warning("以管理员权限重启失败，尝试以普通权限运行")
+            if _has_log_manager:
+                logger.warning("以管理员权限重启失败，尝试以普通权限运行")
+            else:
+                logging.warning("以管理员权限重启失败，尝试以普通权限运行")
             msg_box = create_styled_message_box(
                 None,
                 "提示",
                 "无法以管理员权限启动，将尝试以普通权限运行。部分功能可能受限。"
             )
-            logging.info("显示警告消息框")
+            if _has_log_manager:
+                logger.info("显示警告消息框")
+            else:
+                logging.info("显示警告消息框")
             msg_box.exec()
 
             # 设置环境变量跳过管理员权限检查
             os.environ[ENV_SKIP_ADMIN_CHECK] = "1"
-            logging.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1")
+            if _has_log_manager:
+                logger.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1")
+            else:
+                logging.info(f"设置环境变量 {ENV_SKIP_ADMIN_CHECK}=1")
 
             startup_result = start_main_program()
             if startup_result == 0:
-                logging.info("以普通权限启动主程序成功")
+                if _has_log_manager:
+                    logger.info("以普通权限启动主程序成功")
+                else:
+                    logging.info("以普通权限启动主程序成功")
                 return 0
             else:
-                logging.error("以普通权限启动主程序失败")
+                if _has_log_manager:
+                    logger.error("以普通权限启动主程序失败")
+                else:
+                    logging.error("以普通权限启动主程序失败")
                 error_box = create_styled_message_box(
                     None,
                     "启动失败",
                     "无法启动程序，请检查程序文件是否完整。",
                     QMessageBox.Critical
                 )
-                logging.info("显示错误消息框")
+                if _has_log_manager:
+                    logger.info("显示错误消息框")
+                else:
+                    logging.info("显示错误消息框")
                 error_box.exec()
                 return 1
     else:
         # 用户取消了验证
-        logging.info("用户取消了管理员权限验证，程序退出")
+        if _has_log_manager:
+            logger.info("用户取消了管理员权限验证，程序退出")
+        else:
+            logging.info("用户取消了管理员权限验证，程序退出")
         return 1
 
 if __name__ == "__main__":

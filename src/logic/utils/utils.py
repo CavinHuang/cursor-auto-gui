@@ -17,7 +17,7 @@ def get_app_config_path():
     """获取应用配置文件路径"""
     config_path = os.path.join(os.path.dirname(__file__), "..", "datas", "config.json")
     if is_frozen():
-        config_path =  os.path.join(get_user_home_path(), system_config["app_config_path"], "config.json")
+        config_path =  os.path.join(get_user_home_path(), system_config["app_config_path"], 'datas', "config.json")
     return config_path
 
 def get_app_info():

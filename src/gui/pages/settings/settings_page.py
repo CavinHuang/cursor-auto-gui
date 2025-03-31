@@ -1668,7 +1668,7 @@ class SettingsPage(QWidget):
         self.enable_auto_update = self.update_check.isChecked() if hasattr(self, 'update_check') else True
 
         # 收集基础配置
-        self.domain = self.domain_edit.text()
+        self.domain = self.domain_edit.toPlainText()
 
         # 收集邮箱配置 - 已通过toggle设置
 
