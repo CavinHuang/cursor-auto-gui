@@ -208,19 +208,19 @@ class HomePage(QWidget):
         if hasattr(self, '_reset_running') and self._reset_running:
             logger.log("重置操作正在进行中，请稍后再试", LogLevel.WARNING)
             return
-            
+
         try:
             # 标记操作开始
             self._reset_running = True
-            
+
             # 禁用按钮
             self.reset_button.setEnabled(False)
             self.reset_button.setText("执行中...")
-            
+
             # 记录开始日志
             logger.log("开始重置机器码...", LogLevel.INFO)
             logger.log("正在检查版本...", LogLevel.INFO)
-            
+
             # 直接在主线程中执行操作
             try:
                 greater_than_0_45 = check_cursor_version()
@@ -229,11 +229,11 @@ class HomePage(QWidget):
                 logger.log("重置完成", LogLevel.INFO)
             except Exception as e:
                 logger.log(f"重置失败: {str(e)}", LogLevel.ERROR)
-            
+
             # 恢复按钮状态
             self.reset_button.setEnabled(True)
             self.reset_button.setText("执行")
-            
+
         except Exception as e:
             logger.log(f"操作异常: {str(e)}", LogLevel.ERROR)
             self.reset_button.setEnabled(True)
@@ -242,48 +242,35 @@ class HomePage(QWidget):
             # 标记操作结束
             self._reset_running = False
 
-    # 添加注册相关的槽函数
-    def update_register_ui_success(self):
-        """注册成功后更新UI"""
-        self.reg_button.setEnabled(True)
-        self.reg_button.setText("执行")
-        logger.log("注册完成", LogLevel.INFO)
-
-    def update_register_ui_error(self, error_msg):
-        """注册失败后更新UI"""
-        self.reg_button.setEnabled(True)
-        self.reg_button.setText("执行")
-        logger.log(f"注册失败: {error_msg}", LogLevel.ERROR)
-
     def register_new_account(self):
         """注册新账号 - 简化版本，不使用线程"""
         # 检查是否有正在运行的操作
         if hasattr(self, '_register_running') and self._register_running:
             logger.log("注册操作正在进行中，请稍后再试", LogLevel.WARNING)
             return
-            
+
         try:
             # 标记操作开始
             self._register_running = True
-            
+
             # 禁用按钮
             self.reg_button.setEnabled(False)
             self.reg_button.setText("执行中...")
-            
+
             # 记录开始日志
             logger.log("开始注册新账号...", LogLevel.INFO)
-            
+
             # 直接在主线程中执行操作
             try:
                 init_keep_alive()
                 logger.log("注册完成", LogLevel.INFO)
             except Exception as e:
                 logger.log(f"注册失败: {str(e)}", LogLevel.ERROR)
-            
+
             # 恢复按钮状态
             self.reg_button.setEnabled(True)
             self.reg_button.setText("执行")
-            
+
         except Exception as e:
             logger.log(f"操作异常: {str(e)}", LogLevel.ERROR)
             self.reg_button.setEnabled(True)
@@ -528,26 +515,3 @@ class HomePage(QWidget):
         cursor.setPosition(cursor_position)
         self.log_text.setTextCursor(cursor)
         self.log_text.verticalScrollBar().setValue(scroll_value)
-
-    def cleanup(self):
-        """清理资源"""
-        if hasattr(self, '_reset_worker'):
-            if self._reset_worker.isRunning():
-                self._reset_worker.stop()
-                if not self._reset_worker.wait(2000):  # 等待2秒
-                    self._reset_worker.terminate()  # 强制终止
-            self._reset_worker.deleteLater()
-            del self._reset_worker
-
-        if hasattr(self, 'register_worker'):
-            if self.register_worker.isRunning():
-                self.register_worker.quit()
-                if not self.register_worker.wait(2000):
-                    self.register_worker.terminate()
-            self.register_worker.deleteLater()
-            del self.register_worker
-
-    def closeEvent(self, event):
-        """重写关闭事件"""
-        self.cleanup()
-        super().closeEvent(event)

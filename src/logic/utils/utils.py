@@ -3,7 +3,7 @@
 import os
 import platform
 import sys
-from config.config import system_config
+from config.config import system_config, project_root
 
 def is_frozen():
     """判断当前是否在打包环境中运行"""
@@ -15,7 +15,7 @@ def get_user_home_path():
 
 def get_app_config_path():
     """获取应用配置文件路径"""
-    config_path = os.path.join(os.path.dirname(__file__), "..", "datas", "config.json")
+    config_path = os.path.join(project_root, "datas", "settings.json")
     if is_frozen():
         config_path =  os.path.join(get_user_home_path(), system_config["app_config_path"], 'datas', "config.json")
     return config_path
