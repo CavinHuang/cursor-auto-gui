@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.cursorpro.app</string>
+    <key>CFBundleName</key>
+    <string>CursorPro</string>
+    <key>CFBundleDisplayName</key>
+    <string>Cursor Pro</string>
+    <key>CFBundleExecutable</key>
+    <string>CursorPro</string>
+    <key>CFBundleIconFile</key>
+    <string>app_icon.icns</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSRequiresAquaSystemAppearance</key>
+    <false/>
+    <key>LSEnvironment</key>
+    <dict>
+        <key>MallocNanoZone</key>
+        <string>0</string>
+    </dict>
+</dict>
+</plist>
