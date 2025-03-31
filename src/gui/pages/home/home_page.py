@@ -155,33 +155,17 @@ class HomePage(QWidget):
         # 设置日志管理器的GUI日志输出对象
         logger.set_gui_logger(self.log_text)
 
-        # 获取版本号 - 假设从配置文件或常量中获取
-        version = "3.0.0"  # 实际项目中应该从配置中读取
-
-        # 获取操作系统信息
-        os_name = platform.system()
-        os_version = platform.version()
-        os_info = f"{os_name} {os_version}"
-
-        # 获取当前用户
-        current_user = getpass.getuser()
-
-        # 检查是否有管理员权限 - 使用新的 admin_helper 模块
+        # 仅在日志中显示权限状态，不重复记录启动信息
         has_admin = is_admin()
-        admin_status = "✅ 当前程序已拥有管理员权限，可以正常执行所有功能" if has_admin else "❌ 当前程序无管理员权限，部分功能可能受限"
+        if has_admin:
+            logger.log("当前已具有管理员权限状态", LogLevel.INFO)
+            logger.log("所有功能可以正常使用", LogLevel.INFO)
+        else:
+            logger.log("当前无管理员权限", LogLevel.WARNING)
+            logger.log("部分功能可能受限", LogLevel.WARNING)
 
-        # 检测系统主题
-        theme_detection_method = "defaults 命令"
-        theme_result = self.detect_macos_theme()
-
-        # 添加启动日志
-        logger.log(f"Cursor Pro v{version} 启动中...", LogLevel.INFO)
-        logger.log(f"操作系统: {os_info}", LogLevel.INFO)
-        logger.log(f"当前用户: {current_user}", LogLevel.INFO)
-        logger.log(admin_status, LogLevel.INFO)
-        logger.log(f"当前用户: {current_user}", LogLevel.INFO)
-        logger.log(f"主题检测方法: {theme_detection_method}", LogLevel.INFO)
-        logger.log(f"检测结果: {theme_result}", LogLevel.INFO)
+        # 添加已从配置文件加载设置的日志
+        logger.log("已从配置文件加载设置", LogLevel.INFO)
 
     def reset_machine_code(self):
         """重置机器码"""

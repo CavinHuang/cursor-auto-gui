@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, QSize
 from src.gui.widgets.icons import IconManager
 import platform
 import os
-
+from config.config import system_config
 class AboutPage(QWidget):
     """关于页类，显示应用信息、版本和使用说明"""
 
@@ -24,7 +24,7 @@ class AboutPage(QWidget):
         version_frame = self.create_section_frame("版本信息")
         version_layout = version_frame.layout()
 
-        version_label = QLabel("v3.0.0")
+        version_label = QLabel(f"v{system_config['app_version']}")
         version_label.setStyleSheet("font-size: 15px; padding: 5px 0; border: none; background-color: transparent;")
         version_layout.addWidget(version_label)
 
@@ -34,10 +34,29 @@ class AboutPage(QWidget):
         wechat_frame = self.create_section_frame("微信公众号")
         wechat_layout = wechat_frame.layout()
 
-        wechat_label = QLabel("Ctrler")
-        wechat_label.setStyleSheet("font-size: 15px; color: #4CAF50; padding: 5px 0; border: none; background-color: transparent;")
-        wechat_layout.addWidget(wechat_label)
+        # 创建水平布局来放置名称和二维码
+        wechat_container = QWidget()
+        wechat_container_layout = QHBoxLayout(wechat_container)
+        wechat_container_layout.setContentsMargins(0, 0, 0, 0)
 
+        # 公众号名称
+        wechat_label = QLabel(system_config["mp_wechat_name"])
+        wechat_label.setStyleSheet("font-size: 15px; color: #4CAF50; padding: 5px 0; border: none; background-color: transparent;")
+        wechat_container_layout.addWidget(wechat_label)
+
+        # 二维码图片
+        qrcode_label = QLabel()
+        qrcode_label.setFixedSize(100, 100)
+        qrcode_label.setStyleSheet("border: 1px solid #ddd; border-radius: 4px;")
+
+        # 使用get_pixmap替代get_icon，因为这是一个图片而不是图标
+        qrcode_pixmap = IconManager.get_pixmap(system_config["mp_wechat_qrcode"])
+        qrcode_label.setPixmap(qrcode_pixmap.scaled(
+            100, 100, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+        ))
+        wechat_container_layout.addWidget(qrcode_label)
+
+        wechat_layout.addWidget(wechat_container)
         layout.addWidget(wechat_frame)
 
         # 使用说明
@@ -119,7 +138,7 @@ class AboutPage(QWidget):
 
         # 配置文件路径
         home = os.path.expanduser("~")
-        config_path = f"~/cursor_pro"
+        config_path = f"{home}/{system_config['app_config_path']}"
         config_path_label = QLabel(config_path)
         config_path_label.setStyleSheet("font-size: 13px; color: #4CAF50; border: none; background-color: transparent;")
         config_container_layout.addWidget(config_path_label)

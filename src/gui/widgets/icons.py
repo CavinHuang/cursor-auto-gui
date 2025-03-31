@@ -1,9 +1,45 @@
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import QSize
 import os
-
+from config.config import project_root
 class IconManager:
     """图标管理类，用于加载和管理应用程序中使用的图标"""
+
+    _icon_cache = {}  # 用于缓存已加载的图标
+    _base_path = os.path.join(project_root, "resources")
+
+    @classmethod
+    def get_icon(cls, icon_path):
+        """
+        获取图标
+        :param icon_path: 图标路径（相对于resources目录）
+        :return: QIcon对象
+        """
+        if icon_path in cls._icon_cache:
+            return cls._icon_cache[icon_path]
+
+        full_path = os.path.join(cls._base_path, icon_path)
+        if not os.path.exists(full_path):
+            print(f"警告: 图标文件不存在 {full_path}")
+            return QIcon()
+
+        icon = QIcon(full_path)
+        cls._icon_cache[icon_path] = icon
+        return icon
+
+    @classmethod
+    def get_pixmap(cls, icon_path):
+        """
+        获取图片
+        :param icon_path: 图片路径（相对于resources目录）
+        :return: QPixmap对象
+        """
+        full_path = os.path.join(cls._base_path, icon_path)
+        if not os.path.exists(full_path):
+            print(f"警告: 图片文件不存在 {full_path}")
+            return QPixmap()
+        print(f"获取图片: {full_path}")
+        return QPixmap(full_path)
 
     @staticmethod
     def get_icon_path(icon_name):

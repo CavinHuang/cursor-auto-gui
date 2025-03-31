@@ -2,8 +2,8 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                                 QHBoxLayout, QPushButton, QLabel, QTextEdit,
                                 QFrame, QStackedWidget, QScrollArea, QSizePolicy,
                                 QMessageBox)
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtCore import Qt, QSize, QUrl
+from PySide6.QtGui import QIcon, QDesktopServices
 from src.logic.log.log_manager import logger, LogLevel
 from src.logic.config.config_manager import ConfigManager
 from src.logic.utils.admin_helper import is_admin, restart_as_admin
@@ -12,7 +12,9 @@ import sys
 from .pages.home import HomePage
 from .pages.settings import SettingsPage
 from .pages.about import AboutPage
-
+from config.config import system_config
+from src.logic.utils.utils import get_platform_info
+import resources_rc
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -74,13 +76,13 @@ class MainWindow(QMainWindow):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # 标题
-        title_label = QLabel("Cursor Pro")
+        title_label = QLabel(system_config["app_name"])
         title_label.setStyleSheet("color: #41cd52; font-size: 22px; font-weight: bold;")
         title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(title_label)
 
         # 系统类型
-        os_label = QLabel("系统类型: macOS")
+        os_label = QLabel(f"系统类型: {get_platform_info()['platform']}")
         os_label.setStyleSheet("color: #666; font-size: 12px;")
         layout.addWidget(os_label)
 
@@ -237,10 +239,39 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.theme_btn)
 
         # 底部标签
-        footer_label = QLabel("By Ctrler")
+        # 创建一个水平布局来放置作者信息和GitHub图标
+        footer_layout = QHBoxLayout()
+        footer_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # 作者信息标签
+        footer_label = QLabel(f"By {system_config['app_author']}")
         footer_label.setStyleSheet("color: #666; font-size: 12px; margin-top: 10px;")
-        footer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(footer_label)
+
+        # GitHub链接按钮
+        github_btn = QPushButton("  ")
+        github_btn.setIcon(QIcon(":/icons/github.png"))
+        github_btn.setIconSize(QSize(16, 16))
+        github_btn.setStyleSheet("""
+            QPushButton {
+                border: none;
+                color: #666;
+                padding: 0px;
+                margin-top: 10px;
+                margin-left: 5px;
+            }
+            QPushButton:hover {
+                color: #41cd52;
+            }
+        """)
+        github_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        github_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(system_config["app_github_url"])))
+
+        # 将组件添加到水平布局
+        footer_layout.addWidget(footer_label)
+        footer_layout.addWidget(github_btn)
+
+        # 将水平布局添加到主布局
+        layout.addLayout(footer_layout)
 
         return left_frame
 

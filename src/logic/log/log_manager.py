@@ -2,6 +2,7 @@ import logging
 from enum import Enum, auto
 from PySide6.QtWidgets import QTextEdit
 import datetime
+import time
 
 class LogLevel(Enum):
     """日志级别枚举类"""
@@ -33,13 +34,35 @@ class LogManager:
         # GUI日志输出对象
         self.gui_logger = None
 
+        # 日志去重机制
+        self.recent_logs = {}
+        self.dedup_window = 2  # 2秒内的相同日志会被去重
+
     def set_gui_logger(self, text_edit):
         """设置GUI日志输出对象"""
         if isinstance(text_edit, QTextEdit):
             self.gui_logger = text_edit
 
     def log(self, message, level=LogLevel.INFO):
-        """记录日志"""
+        """记录日志，带去重功能"""
+        # 构建日志唯一ID（日志级别+消息内容）
+        log_id = f"{level.name}:{message}"
+        current_time = time.time()
+
+        # 检查是否是重复日志
+        if log_id in self.recent_logs:
+            last_time = self.recent_logs[log_id]
+            # 如果上次记录的时间距离现在小于指定的时间窗口，则跳过本次记录
+            if current_time - last_time < self.dedup_window:
+                return
+
+        # 更新日志记录时间
+        self.recent_logs[log_id] = current_time
+
+        # 清理过期的日志记录，避免内存持续增长
+        self.clean_old_logs(current_time)
+
+        # 调用原有的日志记录逻辑
         if level == LogLevel.DEBUG:
             self.logger.debug(message)
         elif level == LogLevel.INFO:
@@ -65,6 +88,16 @@ class LogManager:
                 self.gui_logger.append(f"❌ {timestamp} - ERROR: {message}")
             elif level == LogLevel.CRITICAL:
                 self.gui_logger.append(f"🔥 {timestamp} - CRITICAL: {message}")
+
+    def clean_old_logs(self, current_time):
+        """清理超过时间窗口的日志记录"""
+        expired_logs = []
+        for log_id, timestamp in self.recent_logs.items():
+            if current_time - timestamp > self.dedup_window * 5:  # 超过时间窗口的5倍时清理
+                expired_logs.append(log_id)
+
+        for log_id in expired_logs:
+            del self.recent_logs[log_id]
 
 # 创建全局日志管理器实例
 logger = LogManager()

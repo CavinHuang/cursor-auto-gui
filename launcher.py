@@ -293,7 +293,6 @@ class AdminAuthDialog(QDialog):
         # 标题标签
         title_label = QLabel("Cursor Pro 需要管理员权限才能运行。")
         title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: white;")
-        title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(title_label)
 
         # 密码提示标签
