@@ -1,15 +1,15 @@
 import threading
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                               QPushButton, QLabel, QTextEdit, QFrame, QMessageBox)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QThread, Signal
 from src.logic.cursor_pro.keep_alive import check_cursor_version, init_keep_alive, reset_machine_id
 from src.logic.log.log_manager import logger, LogLevel
 from src.logic.utils.admin_helper import is_admin
 import platform
-import os
-import getpass
 import subprocess
-import sys
+import time
+from PySide6.QtCore import QMetaObject, Qt
+from PySide6.QtCore import QMetaObject, Qt
 
 class HomePage(QWidget):
     """主页类，显示主要功能和日志输出"""
@@ -189,38 +189,108 @@ class HomePage(QWidget):
         # 添加已从配置文件加载设置的日志
         logger.log("已从配置文件加载设置", LogLevel.INFO)
 
-    def reset_machine_code(self):
-        """重置机器码"""
-        logger.log("开始重置机器码...", LogLevel.INFO)
-        greater_than_0_45 = check_cursor_version()
-        def reset_thread():
-            try:
-                reset_machine_id(greater_than_0_45)
-            except Exception as e:
-                logger.log(f"重置机器码失败: {str(e)}", LogLevel.ERROR)
+    # 添加槽函数
+    def update_reset_ui_success(self):
+        """重置成功后更新UI"""
+        self.reset_button.setEnabled(True)
+        self.reset_button.setText("执行")
+        logger.log("重置完成", LogLevel.INFO)
 
-        # 启动线程
-        threading.Thread(target=reset_thread, daemon=True).start()
+    def update_reset_ui_error(self, error_msg):
+        """重置失败后更新UI"""
+        self.reset_button.setEnabled(True)
+        self.reset_button.setText("执行")
+        logger.log(f"重置失败: {error_msg}", LogLevel.ERROR)
+
+    def reset_machine_code(self):
+        """重置机器码 - 简化版本，不实时更新UI"""
+        # 检查是否有正在运行的操作
+        if hasattr(self, '_reset_running') and self._reset_running:
+            logger.log("重置操作正在进行中，请稍后再试", LogLevel.WARNING)
+            return
+            
+        try:
+            # 标记操作开始
+            self._reset_running = True
+            
+            # 禁用按钮
+            self.reset_button.setEnabled(False)
+            self.reset_button.setText("执行中...")
+            
+            # 记录开始日志
+            logger.log("开始重置机器码...", LogLevel.INFO)
+            logger.log("正在检查版本...", LogLevel.INFO)
+            
+            # 直接在主线程中执行操作
+            try:
+                greater_than_0_45 = check_cursor_version()
+                logger.log("正在重置机器码...", LogLevel.INFO)
+                reset_machine_id(greater_than_0_45)
+                logger.log("重置完成", LogLevel.INFO)
+            except Exception as e:
+                logger.log(f"重置失败: {str(e)}", LogLevel.ERROR)
+            
+            # 恢复按钮状态
+            self.reset_button.setEnabled(True)
+            self.reset_button.setText("执行")
+            
+        except Exception as e:
+            logger.log(f"操作异常: {str(e)}", LogLevel.ERROR)
+            self.reset_button.setEnabled(True)
+            self.reset_button.setText("执行")
+        finally:
+            # 标记操作结束
+            self._reset_running = False
+
+    # 添加注册相关的槽函数
+    def update_register_ui_success(self):
+        """注册成功后更新UI"""
+        self.reg_button.setEnabled(True)
+        self.reg_button.setText("执行")
+        logger.log("注册完成", LogLevel.INFO)
+
+    def update_register_ui_error(self, error_msg):
+        """注册失败后更新UI"""
+        self.reg_button.setEnabled(True)
+        self.reg_button.setText("执行")
+        logger.log(f"注册失败: {error_msg}", LogLevel.ERROR)
 
     def register_new_account(self):
-        """注册新账号"""
-        logger.log("开始注册新账号...", LogLevel.INFO)
-        self.reg_button.configure(state="disabled", text="注册中...")
-        # 创建新线程执行重置操作
-        def reset_thread():
+        """注册新账号 - 简化版本，不使用线程"""
+        # 检查是否有正在运行的操作
+        if hasattr(self, '_register_running') and self._register_running:
+            logger.log("注册操作正在进行中，请稍后再试", LogLevel.WARNING)
+            return
+            
+        try:
+            # 标记操作开始
+            self._register_running = True
+            
+            # 禁用按钮
+            self.reg_button.setEnabled(False)
+            self.reg_button.setText("执行中...")
+            
+            # 记录开始日志
+            logger.log("开始注册新账号...", LogLevel.INFO)
+            
+            # 直接在主线程中执行操作
             try:
                 init_keep_alive()
-                # 重置完成后，在主线程中更新UI
-                self.after(0, lambda: self.reg_button.configure(state="normal", text="立即注册账号"))
+                logger.log("注册完成", LogLevel.INFO)
             except Exception as e:
-                # 发生错误时，在主线程中更新UI
-                self.after(0, lambda: [
-                    self.reg_button.configure(state="normal", text="立即注册账号"),
-                    print(f"注册失败: {str(e)}")
-                ])
-
-        # 启动线程
-        threading.Thread(target=reset_thread, daemon=True).start()
+                logger.log(f"注册失败: {str(e)}", LogLevel.ERROR)
+            
+            # 恢复按钮状态
+            self.reg_button.setEnabled(True)
+            self.reg_button.setText("执行")
+            
+        except Exception as e:
+            logger.log(f"操作异常: {str(e)}", LogLevel.ERROR)
+            self.reg_button.setEnabled(True)
+            self.reg_button.setText("执行")
+        finally:
+            # 标记操作结束
+            self._register_running = False
 
     def set_theme(self, is_dark):
         """设置主题"""
@@ -458,3 +528,26 @@ class HomePage(QWidget):
         cursor.setPosition(cursor_position)
         self.log_text.setTextCursor(cursor)
         self.log_text.verticalScrollBar().setValue(scroll_value)
+
+    def cleanup(self):
+        """清理资源"""
+        if hasattr(self, '_reset_worker'):
+            if self._reset_worker.isRunning():
+                self._reset_worker.stop()
+                if not self._reset_worker.wait(2000):  # 等待2秒
+                    self._reset_worker.terminate()  # 强制终止
+            self._reset_worker.deleteLater()
+            del self._reset_worker
+
+        if hasattr(self, 'register_worker'):
+            if self.register_worker.isRunning():
+                self.register_worker.quit()
+                if not self.register_worker.wait(2000):
+                    self.register_worker.terminate()
+            self.register_worker.deleteLater()
+            del self.register_worker
+
+    def closeEvent(self, event):
+        """重写关闭事件"""
+        self.cleanup()
+        super().closeEvent(event)
