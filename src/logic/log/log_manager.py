@@ -38,6 +38,50 @@ class LogManager:
         self.recent_logs = {}
         self.dedup_window = 2  # 2秒内的相同日志会被去重
 
+        # 默认日志文本颜色（浅色主题）
+        self.text_color = "#333333"
+
+        # 日志级别对应的颜色（浅色主题）
+        self.level_colors = {
+            LogLevel.DEBUG: "blue",
+            LogLevel.INFO: "green",
+            LogLevel.WARNING: "orange",
+            LogLevel.ERROR: "red",
+            LogLevel.CRITICAL: "darkred"
+        }
+
+        # 深色主题下的日志级别颜色
+        self.dark_level_colors = {
+            LogLevel.DEBUG: "#81a1c1",    # 淡蓝色
+            LogLevel.INFO: "#a3be8c",     # 淡绿色
+            LogLevel.WARNING: "#ebcb8b",  # 淡黄色
+            LogLevel.ERROR: "#bf616a",    # 淡红色
+            LogLevel.CRITICAL: "#d08770"  # 淡橙色
+        }
+
+    def set_text_color(self, color):
+        """设置日志文本颜色
+
+        Args:
+            color (str): 颜色代码，如 "#333333" 或 "#e0e0e0"
+        """
+        self.text_color = color
+
+        # 根据文本颜色判断是否为深色主题
+        is_dark_theme = color.lower() == "#e0e0e0"
+
+        # 根据主题选择对应的日志级别颜色
+        if is_dark_theme:
+            self.level_colors = self.dark_level_colors
+        else:
+            self.level_colors = {
+                LogLevel.DEBUG: "blue",
+                LogLevel.INFO: "green",
+                LogLevel.WARNING: "orange",
+                LogLevel.ERROR: "red",
+                LogLevel.CRITICAL: "darkred"
+            }
+
     def set_gui_logger(self, text_edit):
         """设置GUI日志输出对象"""
         if isinstance(text_edit, QTextEdit):
@@ -78,16 +122,24 @@ class LogManager:
         if self.gui_logger:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+            # 获取对应级别的颜色
+            level_color = self.level_colors.get(level, "inherit")
+
+            # 构建HTML格式的日志消息
             if level == LogLevel.DEBUG:
-                self.gui_logger.append(f"{timestamp} - DEBUG: {message}")
+                log_html = f'<span style="color:{self.text_color};">{timestamp} - <span style="color:{level_color};">DEBUG</span>: {message}</span>'
             elif level == LogLevel.INFO:
-                self.gui_logger.append(f"{timestamp} - INFO: {message}")
+                log_html = f'<span style="color:{self.text_color};">{timestamp} - <span style="color:{level_color};">INFO</span>: {message}</span>'
             elif level == LogLevel.WARNING:
-                self.gui_logger.append(f"⚠️ {timestamp} - WARNING: {message}")
+                log_html = f'<span style="color:{self.text_color};">⚠️ {timestamp} - <span style="color:{level_color};">WARNING</span>: {message}</span>'
             elif level == LogLevel.ERROR:
-                self.gui_logger.append(f"❌ {timestamp} - ERROR: {message}")
+                log_html = f'<span style="color:{self.text_color};">❌ {timestamp} - <span style="color:{level_color};">ERROR</span>: {message}</span>'
             elif level == LogLevel.CRITICAL:
-                self.gui_logger.append(f"🔥 {timestamp} - CRITICAL: {message}")
+                log_html = f'<span style="color:{self.text_color};">🔥 {timestamp} - <span style="color:{level_color};">CRITICAL</span>: {message}</span>'
+
+            # 向GUI日志输出添加HTML格式的日志消息
+            self.gui_logger.insertHtml(log_html + "<br>")
+            self.gui_logger.ensureCursorVisible()
 
     def clean_old_logs(self, current_time):
         """清理超过时间窗口的日志记录"""

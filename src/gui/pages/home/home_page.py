@@ -133,11 +133,28 @@ class HomePage(QWidget):
         log_label.setStyleSheet("font-size: 16px; font-weight: bold; margin-top: 20px; margin-bottom: 10px;")
         layout.addWidget(log_label)
 
+        # 为日志区域创建一个框架，与上方区域保持一致的风格
+        log_frame = QFrame()
+        log_frame.setStyleSheet("border: 1px solid #ddd; border-radius: 8px; padding: 0px;")
+        log_layout = QVBoxLayout(log_frame)
+        log_layout.setContentsMargins(0, 0, 0, 0)  # 清除内部布局边距
+        log_layout.setSpacing(0)  # 消除内部元素间的间距
+
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px; font-family: 'Courier New';")
+        self.log_text.setStyleSheet("""
+            border: none;
+            padding: 10px 10px;
+            font-family: 'Courier New';
+            background-color: transparent;
+            font-size: 12px;
+            line-height: 22px;
+        """)
         self.log_text.setMinimumHeight(200)
-        layout.addWidget(self.log_text)
+        log_layout.addWidget(self.log_text)
+
+        # 将日志框架添加到主布局
+        layout.addWidget(log_frame)
 
         # 连接信号和槽
         self.reset_button.clicked.connect(self.reset_machine_code)
@@ -145,7 +162,7 @@ class HomePage(QWidget):
 
         # 保存UI元素的引用，以便在切换主题时更新样式
         self.section_labels = [quick_op_label, log_label]
-        self.frames = [reset_frame, reg_frame]
+        self.frames = [reset_frame, reg_frame, log_frame]  # 添加log_frame到框架列表
         self.action_labels = [reset_label, reg_label]
         self.desc_labels = [reset_desc, reg_desc]
         self.action_buttons = [self.reset_button, self.reg_button]
@@ -154,6 +171,9 @@ class HomePage(QWidget):
         """初始化日志显示区域"""
         # 设置日志管理器的GUI日志输出对象
         logger.set_gui_logger(self.log_text)
+
+        # 设置日志文本颜色
+        logger.set_text_color("#e0e0e0" if self.is_dark_theme else "#333333")
 
         # 仅在日志中显示权限状态，不重复记录启动信息
         has_admin = is_admin()
@@ -190,6 +210,12 @@ class HomePage(QWidget):
             self.is_dark_theme = is_dark
             self.apply_theme_styles()
 
+            # 更新日志记录器的日志文本颜色
+            logger.set_text_color("#e0e0e0" if is_dark else "#333333")
+
+            # 刷新现有日志文本的颜色
+            self.refresh_log_text_colors()
+
     def apply_theme_styles(self):
         """应用主题样式"""
         if self.is_dark_theme:
@@ -201,8 +227,12 @@ class HomePage(QWidget):
                 label.setStyleSheet("font-size: 16px; font-weight: bold; color: #f0f0f0; margin-bottom: 10px;")
 
             # 更新框架样式
-            for frame in self.frames:
-                frame.setStyleSheet("border: 1px solid #444; border-radius: 4px; padding: 10px; background-color: #333;")
+            for i, frame in enumerate(self.frames):
+                if frame == self.frames[-1]:  # 如果是日志框架（最后一个）
+                    print(frame)
+                    frame.setStyleSheet("border: 1px solid #444; border-radius: 8px; padding: 0px; background-color: #2d2d2d;")
+                else:  # 对于其他框架
+                    frame.setStyleSheet("border: 1px solid #444; border-radius: 4px; padding: 10px; background-color: #333;")
 
             # 更新操作标签样式
             for label in self.action_labels:
@@ -230,15 +260,56 @@ class HomePage(QWidget):
                     "}"
                 )
 
-            # 更新日志文本区域样式
-            self.log_text.setStyleSheet(
-                "border: 1px solid #444; "
-                "border-radius: 4px; "
-                "padding: 10px; "
-                "font-family: 'Courier New'; "
-                "background-color: #2d2d2d; "
-                "color: #e0e0e0;"
-            )
+            # 更新日志文本区域样式 - 无需设置边框，因为边框在框架上
+            self.log_text.setStyleSheet("""
+                border: none;
+                padding: 15px 18px;
+                font-family: 'Courier New';
+                background-color: transparent;
+                color: #e0e0e0;
+
+                /* 深色主题滚动条样式 */
+                QScrollBar:vertical {
+                   background: #2d2d2d;
+                   width: 6px;
+                   margin: 0px;
+                }
+                QScrollBar::handle:vertical {
+                   background: #555555;
+                   min-height: 30px;
+                   border-radius: 3px;
+                }
+                QScrollBar::handle:vertical:hover {
+                   background: #666666;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                   height: 0px;
+                }
+                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                   background: transparent;
+                }
+
+                /* 深色主题水平滚动条样式 */
+                QScrollBar:horizontal {
+                   background: #2d2d2d;
+                   height: 6px;
+                   margin: 0px;
+                }
+                QScrollBar::handle:horizontal {
+                   background: #555555;
+                   min-width: 30px;
+                   border-radius: 3px;
+                }
+                QScrollBar::handle:horizontal:hover {
+                   background: #666666;
+                }
+                QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+                   width: 0px;
+                }
+                QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+                   background: transparent;
+                }
+            """)
 
         else:
             # 浅色主题样式
@@ -249,8 +320,11 @@ class HomePage(QWidget):
                 label.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
 
             # 更新框架样式
-            for frame in self.frames:
-                frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
+            for i, frame in enumerate(self.frames):
+                if frame == self.frames[-1]:  # 如果是日志框架（最后一个）
+                    frame.setStyleSheet("border: 1px solid #ddd; border-radius: 8px; padding: 0px;")
+                else:  # 对于其他框架
+                    frame.setStyleSheet("border: 1px solid #ddd; border-radius: 4px; padding: 10px;")
 
             # 更新操作标签样式
             for label in self.action_labels:
@@ -278,10 +352,91 @@ class HomePage(QWidget):
                     "}"
                 )
 
-            # 更新日志文本区域样式
-            self.log_text.setStyleSheet(
-                "border: 1px solid #ddd; "
-                "border-radius: 4px; "
-                "padding: 10px; "
-                "font-family: 'Courier New';"
-            )
+            # 更新日志文本区域样式 - 无需设置边框，因为边框在框架上
+            self.log_text.setStyleSheet("""
+                border: none;
+                padding: 15px 18px;
+                font-family: 'Courier New';
+                background-color: transparent;
+
+                /* 浅色主题滚动条样式 */
+                QScrollBar:vertical {
+                   background: #f5f5f5;
+                   width: 6px;
+                   margin: 0px;
+                }
+                QScrollBar::handle:vertical {
+                   background: #c0c0c0;
+                   min-height: 30px;
+                   border-radius: 3px;
+                }
+                QScrollBar::handle:vertical:hover {
+                   background: #a0a0a0;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                   height: 0px;
+                }
+                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                   background: transparent;
+                }
+
+                /* 浅色主题水平滚动条样式 */
+                QScrollBar:horizontal {
+                   background: #f5f5f5;
+                   height: 6px;
+                   margin: 0px;
+                }
+                QScrollBar::handle:horizontal {
+                   background: #c0c0c0;
+                   min-width: 30px;
+                   border-radius: 3px;
+                }
+                QScrollBar::handle:horizontal:hover {
+                   background: #a0a0a0;
+                }
+                QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+                   width: 0px;
+                }
+                QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+                   background: transparent;
+                }
+            """)
+
+    def refresh_log_text_colors(self):
+        """刷新日志文本的颜色以适应当前主题"""
+        current_text = self.log_text.toHtml()
+
+        # 保存当前光标位置和滚动条位置
+        cursor = self.log_text.textCursor()
+        cursor_position = cursor.position()
+        scroll_value = self.log_text.verticalScrollBar().value()
+
+        if self.is_dark_theme:
+            # 深色主题：替换文本颜色为浅色
+            # 替换默认文本颜色
+            current_text = current_text.replace('color:#000000;', 'color:#e0e0e0;')
+            current_text = current_text.replace('color:#333333;', 'color:#e0e0e0;')
+
+            # 替换不同日志级别的文本颜色
+            current_text = current_text.replace('color:blue;', 'color:#81a1c1;')     # 调试信息颜色
+            current_text = current_text.replace('color:green;', 'color:#a3be8c;')    # 一般信息颜色
+            current_text = current_text.replace('color:orange;', 'color:#ebcb8b;')   # 警告信息颜色
+            current_text = current_text.replace('color:red;', 'color:#bf616a;')      # 错误信息颜色
+        else:
+            # 浅色主题：替换文本颜色为深色
+            # 替换默认文本颜色
+            current_text = current_text.replace('color:#e0e0e0;', 'color:#333333;')
+
+            # 替换不同日志级别的文本颜色
+            current_text = current_text.replace('color:#81a1c1;', 'color:blue;')     # 调试信息颜色
+            current_text = current_text.replace('color:#a3be8c;', 'color:green;')    # 一般信息颜色
+            current_text = current_text.replace('color:#ebcb8b;', 'color:orange;')   # 警告信息颜色
+            current_text = current_text.replace('color:#bf616a;', 'color:red;')      # 错误信息颜色
+
+        # 设置替换后的HTML内容
+        self.log_text.setHtml(current_text)
+
+        # 恢复光标位置和滚动条位置
+        cursor.setPosition(cursor_position)
+        self.log_text.setTextCursor(cursor)
+        self.log_text.verticalScrollBar().setValue(scroll_value)

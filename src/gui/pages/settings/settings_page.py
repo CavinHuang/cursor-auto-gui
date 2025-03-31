@@ -7,6 +7,9 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
 from PySide6.QtCore import Qt, Signal
 from src.logic.log.log_manager import logger, LogLevel
 from src.logic.config.config_manager import ConfigManager
+import platform
+import subprocess
+import re
 
 class SettingsPage(QWidget):
     """设置页面类，提供应用程序各种设置选项"""
@@ -1179,6 +1182,20 @@ class SettingsPage(QWidget):
                 }
             """)
 
+            # 更新域名输入框样式
+            self.domain_edit.setStyleSheet("""
+                QTextEdit {
+                    border: 1px solid #555555;
+                    border-radius: 6px;
+                    padding: 8px;
+                    background: transparent;
+                    color: #e0e0e0;
+                }
+                QTextEdit:focus {
+                    border: 1px solid #41cd52;
+                }
+            """)
+
         else:
             # 浅色主题样式
             scroll_content.setStyleSheet("background-color: transparent;")  # 设置为透明
@@ -1419,6 +1436,20 @@ class SettingsPage(QWidget):
                 }
             """)
 
+            # 更新域名输入框样式
+            self.domain_edit.setStyleSheet("""
+                QTextEdit {
+                    border: 1px solid #e0e0e0;
+                    border-radius: 6px;
+                    padding: 8px;
+                    background: white;
+                    selection-background-color: #41cd52;
+                }
+                QTextEdit:focus {
+                    border: 1px solid #41cd52;
+                }
+            """)
+
     def update_toggle_styles(self):
         """更新开关类控件样式"""
         # 更新临时邮箱复选框样式
@@ -1446,6 +1477,97 @@ class SettingsPage(QWidget):
         self.use_proxy = checked
         self.proxy_address_edit.setEnabled(checked)
         self.proxy_port_spin.setEnabled(checked)
+
+        # 如果开启代理，尝试获取系统代理配置
+        if checked:
+            system_proxy = self.get_system_proxy()
+            if system_proxy:
+                proxy_host, proxy_port = system_proxy
+                self.proxy_address_edit.setText(proxy_host)
+                self.proxy_port_spin.setValue(proxy_port)
+                logger.log(f"已获取系统代理配置: {proxy_host}:{proxy_port}", LogLevel.INFO)
+
+    def get_system_proxy(self):
+        """获取系统代理配置
+
+        返回:
+            tuple: (代理地址, 代理端口) 或者 None (如果没有找到代理配置)
+        """
+        system = platform.system()
+
+        try:
+            if system == "Darwin":  # macOS
+                # 获取当前活跃的网络服务
+                services_output = subprocess.check_output(
+                    ["networksetup", "-listallnetworkservices"],
+                    universal_newlines=True
+                )
+                active_services = [
+                    service for service in services_output.split('\n')[1:]
+                    if service and not service.startswith('*')
+                ]
+
+                # 遍历活跃的网络服务，查找代理设置
+                for service in active_services:
+                    proxy_output = subprocess.check_output(
+                        ["networksetup", "-getwebproxy", service],
+                        universal_newlines=True
+                    )
+
+                    # 检查代理是否启用
+                    enabled_match = re.search(r"Enabled: (Yes|No)", proxy_output)
+                    if enabled_match and enabled_match.group(1) == "Yes":
+                        # 获取代理服务器和端口
+                        server_match = re.search(r"Server: ([\w\.]+)", proxy_output)
+                        port_match = re.search(r"Port: (\d+)", proxy_output)
+
+                        if server_match and port_match:
+                            proxy_host = server_match.group(1)
+                            proxy_port = int(port_match.group(1))
+                            return (proxy_host, proxy_port)
+
+            elif system == "Windows":
+                # Windows系统获取代理设置
+                reg_query = subprocess.check_output(
+                    ["reg", "query", "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings"],
+                    universal_newlines=True
+                )
+
+                # 检查代理是否启用
+                proxy_enable = re.search(r"ProxyEnable\s+REG_DWORD\s+0x([0-9a-f]+)", reg_query)
+                if proxy_enable and proxy_enable.group(1) == "1":
+                    # 获取代理服务器设置
+                    proxy_server = re.search(r"ProxyServer\s+REG_SZ\s+([\w\.:]+)", reg_query)
+                    if proxy_server:
+                        proxy_str = proxy_server.group(1)
+                        if ":" in proxy_str:
+                            host, port_str = proxy_str.split(":", 1)
+                            try:
+                                port = int(port_str)
+                                return (host, port)
+                            except ValueError:
+                                pass
+
+            elif system == "Linux":
+                # Linux系统尝试获取环境变量中的代理设置
+                env_vars = ["http_proxy", "HTTP_PROXY"]
+                for var in env_vars:
+                    proxy_str = subprocess.check_output(f"echo ${var}", shell=True, universal_newlines=True).strip()
+                    if proxy_str:
+                        # 移除协议前缀
+                        proxy_str = proxy_str.replace("http://", "").replace("https://", "")
+                        if ":" in proxy_str:
+                            host, port_str = proxy_str.split(":", 1)
+                            try:
+                                port = int(port_str)
+                                return (host, port)
+                            except ValueError:
+                                pass
+
+        except Exception as e:
+            logger.log(f"获取系统代理配置时出错: {str(e)}", LogLevel.ERROR)
+
+        return None
 
     def on_temp_mail_toggled(self, checked):
         """当临时邮箱选项切换时触发"""
