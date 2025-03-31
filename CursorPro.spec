@@ -42,10 +42,11 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['/Users/cavinhuang/workspace/projects/cursor-auto-gui/resources/icons/app_icon.icns'],
 )
 app = BUNDLE(
     exe,
     name='CursorPro.app',
-    icon=None,
+    icon='/Users/cavinhuang/workspace/projects/cursor-auto-gui/resources/icons/app_icon.icns',
     bundle_identifier=None,
 )
