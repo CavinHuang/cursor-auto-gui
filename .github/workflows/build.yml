@@ -133,7 +133,7 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 更新version文件到当前发布版本
@@ -149,6 +149,6 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add version
           git commit -m "更新version文件到发布版本 ${{ github.ref_name }}" || echo "没有变化需要提交"
-          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF#refs/heads/}
+          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
