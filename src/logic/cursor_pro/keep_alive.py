@@ -2,19 +2,17 @@ from enum import Enum
 import json
 import os
 import random
-import sys
 import time
 from typing import Optional
 from src.logic.cursor_pro.cursor_auth_manager import CursorAuthManager
 from src.logic.cursor_pro.email_generator import EmailGenerator
 from src.logic.cursor_pro.get_email_code import EmailVerificationHandler
-from src.logic.cursor_pro import go_cursor_help, go_cursor_help_mac
-from src.logic.cursor_pro import go_cursor_help_win
+from src.logic.cursor_pro import go_cursor_help
 from src.logic.cursor_pro import patch_cursor_get_machine_id
 from src.logic.cursor_pro.reset_machine import MachineIDResetter
 from src.logic.log import logger
-from fake_useragent import UserAgent
 from src.logic.log.log_manager import LogLevel
+from src.logic.utils.utils import get_app_screenshots_path
 from src.utils.browser_utils import BrowserManager
 
 def check_cursor_version():
@@ -80,15 +78,7 @@ def save_screenshot(tab, stage: str, timestamp: bool = True) -> None:
         timestamp: 是否添加时间戳
     """
     try:
-        # 创建 screenshots 目录
-        # 获取应用程序的根目录路径
-        if getattr(sys, "frozen", False):
-            # 如果是打包后的可执行文件
-            application_path = os.path.dirname(sys.executable)
-        else:
-            # 如果是开发环境
-            application_path = os.path.join(os.path.dirname(__file__), '../../..')
-        screenshot_dir = os.path.join(application_path, "screenshots")
+        screenshot_dir = get_app_screenshots_path()
         if not os.path.exists(screenshot_dir):
             os.makedirs(screenshot_dir)
 

@@ -20,6 +20,13 @@ def get_app_config_path():
         config_path =  os.path.join(get_user_home_path(), system_config["app_config_path"], 'datas', "config.json")
     return config_path
 
+def get_app_screenshots_path():
+    """获取应用截图文件夹路径"""
+    screenshots_path = os.path.join(project_root, "screenshots")
+    if is_frozen():
+        screenshots_path = os.path.join(get_user_home_path(), system_config["app_config_path"], "screenshots")
+    return screenshots_path
+
 def get_app_info():
     """获取应用版本号"""
     with open("version", "r") as f:
