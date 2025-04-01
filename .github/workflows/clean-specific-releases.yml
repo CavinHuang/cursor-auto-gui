@@ -1,0 +1,42 @@
+name: 清理特定发布
+
+on:
+  workflow_dispatch:  # 仅手动触发
+
+jobs:
+  clean-specific-releases:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装依赖
+        run: |
+          pip install PyGithub
+
+      - name: 删除没有版本号的发布
+        run: |
+          python -c '
+          import os
+          import re
+          from github import Github
+
+          # 初始化GitHub API
+          g = Github(os.environ["GITHUB_TOKEN"])
+          repo = g.get_repo(os.environ["GITHUB_REPOSITORY"])
+
+          # 获取所有发布
+          releases = repo.get_releases()
+
+          # 定义版本号模式
+          version_pattern = re.compile(r"v\d+\.\d+\.\d+")
+
+          # 遍历并删除不符合模式的发布
+          for release in releases:
+              # 检查发布名称或标签是否包含版本号
+              if not (version_pattern.search(release.title) or version_pattern.search(release.tag_name)):
+                  print(f"删除发布: {release.title} ({release.tag_name})")
+                  release.delete_release()
+          '
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

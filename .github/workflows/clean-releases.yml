@@ -1,0 +1,29 @@
+name: 清理旧发布
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # 每周日午夜运行
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  clean-releases:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node环境
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: 安装依赖
+        run: npm install @octokit/rest
+
+      - name: 清理旧发布
+        uses: dev-drprasad/delete-older-releases@v0.3.2
+        with:
+          keep_latest: 5  # 保留最新的5个发布
+          delete_tags: false  # 不删除对应的标签
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
