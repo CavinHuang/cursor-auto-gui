@@ -1,220 +1,98 @@
-name: Build Executables
+name: 构建应用程序
 
 on:
   push:
+    branches: [ main, master ]
     tags:
-      - 'v*'  # 添加标签触发条件，匹配 v1.0.0 这样的标签
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build-windows:
     runs-on: windows-latest
-
     steps:
-    - uses: actions/checkout@v2
+      - name: 检出代码
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
+      - name: 设置Python环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller
-        pip install -r requirements.txt
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
 
-    - name: Build EXE
-      run: |
-        python scripts/build_windows.py
+      - name: 运行构建脚本
+        run: |
+          python scripts/build.py
 
-    - name: Create ZIP package
-      run: |
-        powershell Compress-Archive -Path dist\CursorPro.exe -DestinationPath dist\CursorPro-Windows-${{ github.ref_name }}.zip
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v3
+        with:
+          name: CursorPro-Windows
+          path: dist/CursorPro.exe
+          if-no-files-found: error
 
-    - name: Upload Windows artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: CursorPro-Windows-${{ github.ref_name }}.zip
-        path: dist/CursorPro-Windows-${{ github.ref_name }}.zip
-
-  build-macos-arm64:
+  build-macos:
     runs-on: macos-latest
-
     steps:
-    - uses: actions/checkout@v2
+      - name: 检出代码
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
+      - name: 设置Python环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller
-        pip install -r requirements.txt
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
 
-    - name: Build MacOS ARM executable
-      run: |
-        python scripts/build_macos_arm64.py
+      - name: 运行构建脚本
+        run: |
+          python scripts/build.py
 
-    - name: Set executable permissions
-      run: |
-        chmod +x dist/CursorPro.app/Contents/MacOS/CursorPro
-        find dist/CursorPro.app -type f -name "*.so" -o -name "*.dylib" | xargs chmod +x
-
-    - name: Create entitlements file
-      run: |
-        cat > entitlements.plist << EOF
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
-            <true/>
-            <key>com.apple.security.cs.allow-jit</key>
-            <true/>
-            <key>com.apple.security.cs.disable-library-validation</key>
-            <true/>
-            <key>com.apple.security.automation.apple-events</key>
-            <true/>
-        </dict>
-        </plist>
-        EOF
-
-    - name: Ad-hoc code signing
-      run: |
-        codesign --force --deep --sign - --entitlements entitlements.plist --options runtime dist/CursorPro.app
-
-    - name: Remove quarantine attribute
-      run: |
-        xattr -rc dist/CursorPro.app
-
-    - name: Create ZIP package
-      run: |
-        ditto -c -k --keepParent dist/CursorPro.app dist/CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip
-
-    - name: Upload MacOS ARM artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip
-        path: dist/CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip
-        if-no-files-found: error
-
-  build-linux:
-    runs-on: ubuntu-22.04
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller
-        pip install -r requirements.txt
-
-    - name: Build Linux executable
-      run: |
-        python scripts/build_linux.py
-
-    - name: Create ZIP package
-      run: |
-        cd dist
-        zip -r CursorPro-Linux-${{ github.ref_name }}.zip CursorPro
-
-    - name: Upload Linux artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: CursorPro-Linux-${{ github.ref_name }}.zip
-        path: dist/CursorPro-Linux-${{ github.ref_name }}.zip
-
-  build-macos-intel:
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: |
-        arch -x86_64 pip3 install --upgrade pip
-        arch -x86_64 pip3 install pyinstaller
-        arch -x86_64 pip3 install -r requirements.txt
-
-    - name: Build MacOS Intel executable
-      run: |
-        python scripts/build_macos_intel.py
-
-    - name: Set executable permissions
-      run: |
-        chmod +x dist/CursorPro.app/Contents/MacOS/CursorPro
-        find dist/CursorPro.app -type f -name "*.so" -o -name "*.dylib" | xargs chmod +x
-
-    - name: Create entitlements file
-      run: |
-        cat > entitlements.plist << EOF
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
-            <true/>
-            <key>com.apple.security.cs.allow-jit</key>
-            <true/>
-            <key>com.apple.security.cs.disable-library-validation</key>
-            <true/>
-            <key>com.apple.security.automation.apple-events</key>
-            <true/>
-        </dict>
-        </plist>
-        EOF
-
-    - name: Ad-hoc code signing
-      run: |
-        codesign --force --deep --sign - --entitlements entitlements.plist --options runtime dist/CursorPro.app
-
-    - name: Remove quarantine attribute
-      run: |
-        xattr -rc dist/CursorPro.app
-
-    - name: Create ZIP package
-      run: |
-        ditto -c -k --keepParent dist/CursorPro.app dist/CursorPro-MacOS-Intel-${{ github.ref_name }}.zip
-
-    - name: Upload MacOS Intel artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: CursorPro-MacOS-Intel-${{ github.ref_name }}.zip
-        path: dist/CursorPro-MacOS-Intel-${{ github.ref_name }}.zip
-        if-no-files-found: error
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v3
+        with:
+          name: CursorPro-macOS
+          path: dist/CursorPro.app
+          if-no-files-found: error
 
   create-release:
-    needs: [build-windows, build-macos-arm64, build-linux, build-macos-intel]
+    needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - name: 下载所有构建产物
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
 
-      - name: Create Release
+      - name: 打包Windows产物
+        run: |
+          cd artifacts/CursorPro-Windows
+          7z a -tzip ../../CursorPro-Windows.zip .
+
+      - name: 打包macOS产物
+        run: |
+          cd artifacts/CursorPro-macOS
+          tar -czf ../../CursorPro-macOS.tar.gz .
+
+      - name: 创建发布
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/CursorPro-Windows-${{ github.ref_name }}.zip/CursorPro-Windows-${{ github.ref_name }}.zip
-            artifacts/CursorPro-Linux-${{ github.ref_name }}.zip/CursorPro-Linux-${{ github.ref_name }}.zip
-            artifacts/CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip/CursorPro-MacOS-ARM64-${{ github.ref_name }}.zip
-            artifacts/CursorPro-MacOS-Intel-${{ github.ref_name }}.zip/CursorPro-MacOS-Intel-${{ github.ref_name }}.zip
+            CursorPro-Windows.zip
+            CursorPro-macOS.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
