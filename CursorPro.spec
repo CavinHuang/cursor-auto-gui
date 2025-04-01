@@ -22,14 +22,33 @@ for dir_path in [resources_dir, config_dir, src_dir, icons_dir]:
 # 检查必要的文件
 launcher_path = os.path.join(ROOT_DIR, 'launcher.py')
 main_path = os.path.join(ROOT_DIR, 'main.py')
-icon_path = os.path.join(resources_dir, 'icons', 'app_icon.icns')
+
+# 根据不同平台选择不同的图标格式
+if sys.platform == 'darwin':  # macOS
+    icon_path = os.path.join(resources_dir, 'icons', 'app_icon.icns')
+    icon_name = 'app_icon.icns'
+elif sys.platform == 'win32':  # Windows
+    icon_path = os.path.join(resources_dir, 'icons', 'app_icon.ico')
+    icon_name = 'app_icon.ico'
+else:  # Linux或其他平台
+    icon_path = os.path.join(resources_dir, 'icons', 'app_icon.png')
+    icon_name = 'app_icon.png'
+
+# 检查图标文件是否存在
+if not os.path.exists(icon_path):
+    print(f"警告: 平台 {sys.platform} 对应的图标文件不存在 - {icon_path}")
+    # 尝试查找其他格式的图标作为备用
+    for alt_ext in ['icns', 'ico', 'png']:
+        alt_path = os.path.join(resources_dir, 'icons', f'app_icon.{alt_ext}')
+        if os.path.exists(alt_path):
+            print(f"找到替代图标: {alt_path}")
+            icon_path = alt_path
+            break
 
 if not os.path.exists(launcher_path):
     print(f"警告: 启动器文件不存在 - {launcher_path}")
 if not os.path.exists(main_path):
     print(f"警告: 主程序文件不存在 - {main_path}")
-if not os.path.exists(icon_path):
-    print(f"警告: 图标文件不存在 - {icon_path}")
 
 a = Analysis(
     [launcher_path],  # 使用变量替代硬编码路径
