@@ -12,6 +12,7 @@ resources_dir = os.path.join(ROOT_DIR, 'resources')
 config_dir = os.path.join(ROOT_DIR, 'config')
 src_dir = os.path.join(ROOT_DIR, 'src')
 icons_dir = os.path.join(resources_dir, 'icons')
+version_path = os.path.join(ROOT_DIR, 'version')
 
 # 确保必要的目录存在
 for dir_path in [resources_dir, config_dir, src_dir, icons_dir]:
@@ -59,7 +60,8 @@ a = Analysis(
         (config_dir, 'config'),
         (launcher_path, '.'),
         (main_path, '.'),
-        (src_dir, 'src')
+        (src_dir, 'src'),
+        (version_path, '.')
     ],
     hiddenimports=[
         # PySide6相关模块
