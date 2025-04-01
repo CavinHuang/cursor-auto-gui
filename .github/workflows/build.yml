@@ -92,5 +92,6 @@ jobs:
           files: |
             artifacts/CursorPro-Windows-${{ github.ref_name }}.zip/CursorPro-Windows-${{ github.ref_name }}.zip
             artifacts/CursorPro-MacOS-${{ github.ref_name }}.zip/CursorPro-MacOS-${{ github.ref_name }}.zip
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
