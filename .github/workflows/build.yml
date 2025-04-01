@@ -86,12 +86,17 @@ jobs:
         with:
           path: artifacts
 
+      - name: 准备发布文件
+        run: |
+          find artifacts -type f -name "*.zip" | sort
+          mkdir -p release-files
+          cp artifacts/CursorPro-Windows-${{ github.ref_name }}.zip/CursorPro-Windows-${{ github.ref_name }}.zip release-files/ || echo "Windows文件不存在"
+          cp artifacts/CursorPro-MacOS-${{ github.ref_name }}.zip/CursorPro-MacOS-${{ github.ref_name }}.zip release-files/ || echo "MacOS文件不存在"
+
       - name: 创建发布
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            artifacts/CursorPro-Windows-${{ github.ref_name }}.zip/CursorPro-Windows-${{ github.ref_name }}.zip
-            artifacts/CursorPro-MacOS-${{ github.ref_name }}.zip/CursorPro-MacOS-${{ github.ref_name }}.zip
+          files: release-files/*.zip
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
