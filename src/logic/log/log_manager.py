@@ -1,7 +1,7 @@
 import logging
 from enum import Enum, auto
 from PySide6.QtWidgets import QTextEdit
-from PySide6.QtCore import QMutex, QMutexLocker
+from PySide6.QtCore import QMutex, QMutexLocker, QObject, Signal, Qt
 import datetime
 import time
 import os
@@ -17,6 +17,10 @@ class LogLevel(Enum):
     WARNING = auto()
     ERROR = auto()
     CRITICAL = auto()
+
+class LogSignalEmitter(QObject):
+    """用于发送日志信号的QObject子类"""
+    log_to_gui = Signal(str)
 
 class LogManager:
     """日志管理类，用于集中管理应用程序的日志输出"""
@@ -44,6 +48,9 @@ class LogManager:
 
         # GUI日志输出对象
         self.gui_logger = None
+
+        # 创建信号发射器，用于线程安全的GUI更新
+        self.signal_emitter = LogSignalEmitter()
 
         # 日志去重机制
         self.recent_logs = {}
@@ -103,6 +110,11 @@ class LogManager:
         mutex_locker = QMutexLocker(self.mutex)
         if isinstance(text_edit, QTextEdit):
             self.gui_logger = text_edit
+            # 连接信号到槽函数，使用Qt.QueuedConnection确保在主线程执行
+            self.signal_emitter.log_to_gui.connect(
+                self.gui_logger.insertHtml,
+                type=Qt.QueuedConnection
+            )
 
     def set_file_logger(self, log_dir=None, log_file=None, max_size_mb=10, backup_count=5):
         """设置文件日志
@@ -208,7 +220,7 @@ class LogManager:
             self.logger.critical(message)
 
         # 如果设置了GUI日志输出对象，则同时在GUI中显示日志
-        # 这部分需要使用互斥锁保护
+        # 使用互斥锁保护获取信息的过程
         mutex_locker = QMutexLocker(self.mutex)
         if self.gui_logger:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -228,21 +240,26 @@ class LogManager:
             elif level == LogLevel.CRITICAL:
                 log_html = f'<span style="color:{self.text_color};">🔥 {timestamp} - <span style="color:{level_color};">CRITICAL</span>: {message}</span>'
 
+            log_html = log_html + "<br>"
+
             try:
-                # 向GUI日志输出添加HTML格式的日志消息
-                self.gui_logger.insertHtml(log_html + "<br>")
-                self.gui_logger.ensureCursorVisible()
+                # 通过信号在主线程中更新GUI，而不是直接操作
+                self.signal_emitter.log_to_gui.emit(log_html)
+
+                # 不要直接调用ensureCursorVisible，也需要在主线程中执行
+                # 我们可以通过QTimer::singleShot在主线程中执行此操作
+                # 但这个功能不是必须的，可以暂时移除
             except Exception as e:
                 # 如果GUI日志输出失败，仍然继续标准日志记录
                 print(f"GUI日志输出失败: {str(e)}")
 
-    def info(self, message):
-        """记录INFO级别日志"""
-        self.log(message, LogLevel.INFO)
-
     def debug(self, message):
         """记录DEBUG级别日志"""
         self.log(message, LogLevel.DEBUG)
+
+    def info(self, message):
+        """记录INFO级别日志"""
+        self.log(message, LogLevel.INFO)
 
     def warning(self, message):
         """记录WARNING级别日志"""
@@ -257,15 +274,14 @@ class LogManager:
         self.log(message, LogLevel.CRITICAL)
 
     def clean_old_logs(self, current_time):
-        """清理超过时间窗口的日志记录"""
-        # 已经在调用该方法的地方获取了锁，不需要再次获取
-        expired_logs = []
+        """清理过期的日志记录"""
+        to_remove = []
         for log_id, timestamp in self.recent_logs.items():
-            if current_time - timestamp > self.dedup_window * 5:  # 超过时间窗口的5倍时清理
-                expired_logs.append(log_id)
+            if current_time - timestamp > self.dedup_window:
+                to_remove.append(log_id)
 
-        for log_id in expired_logs:
-            del self.recent_logs[log_id]
+        for log_id in to_remove:
+            self.recent_logs.pop(log_id, None)
 
     def set_level(self, level):
         """设置日志级别

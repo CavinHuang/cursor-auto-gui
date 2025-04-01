@@ -5,10 +5,12 @@ import random
 import sys
 import time
 from typing import Optional
-from src.logic.cursor_pro import go_cursor_help, patch_cursor_get_machine_id
 from src.logic.cursor_pro.cursor_auth_manager import CursorAuthManager
 from src.logic.cursor_pro.email_generator import EmailGenerator
 from src.logic.cursor_pro.get_email_code import EmailVerificationHandler
+from src.logic.cursor_pro import go_cursor_help, go_cursor_help_mac
+from src.logic.cursor_pro import go_cursor_help_win
+from src.logic.cursor_pro import patch_cursor_get_machine_id
 from src.logic.cursor_pro.reset_machine import MachineIDResetter
 from src.logic.log import logger
 from fake_useragent import UserAgent
@@ -336,8 +338,18 @@ def update_cursor_auth(email=None, access_token=None, refresh_token=None):
     return auth_manager.update_auth(email, access_token, refresh_token)
 
 def reset_machine_id(greater_than_0_45):
+    # if greater_than_0_45:
+    #     # 提示请手动执行脚本 https://github.com/chengazhen/cursor-auto-free/blob/main/patch_cursor_get_machine_id.py
+    #     if sys.platform == "darwin":
+    #         go_cursor_help_mac.go_cursor_help_mac()
+    #     elif sys.platform == "win32":
+    #         go_cursor_help_win.go_cursor_help_win()
+    #     else:
+    #         logger.error("不支持的操作系统")
+    # else:
+    #     MachineIDResetter().reset_machine_ids()
+    # MachineIDResetter().reset_machine_ids()
     if greater_than_0_45:
-        # 提示请手动执行脚本 https://github.com/chengazhen/cursor-auto-free/blob/main/patch_cursor_get_machine_id.py
         go_cursor_help.go_cursor_help()
     else:
         MachineIDResetter().reset_machine_ids()
