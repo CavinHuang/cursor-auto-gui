@@ -35,12 +35,15 @@ jobs:
         run: |
           chcp 65001
           python scripts/build.py
+      - name: Create ZIP package
+        run: |
+          powershell Compress-Archive -Path dist\CursorPro.exe -DestinationPath dist\CursorPro-Windows-${{ github.ref_name }}.zip
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: CursorPro-Windows
-          path: dist/CursorPro.exe
+          name: CursorPro-Windows-${{ github.ref_name }}.zip
+          path: dist/CursorPro-Windows-${{ github.ref_name }}.zip
           if-no-files-found: error
 
   build-macos:
@@ -65,11 +68,15 @@ jobs:
         run: |
           python scripts/build.py
 
+      - name: Create ZIP package
+        run: |
+          ditto -c -k --keepParent dist/CursorPro.app dist/CursorPro-MacOS-${{ github.ref_name }}.zip
+
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: CursorPro-macOS
-          path: dist/CursorPro.app
+          name: CursorPro-MacOS-${{ github.ref_name }}.zip
+          path: dist/CursorPro-MacOS-${{ github.ref_name }}.zip
           if-no-files-found: error
 
   create-release:
@@ -82,21 +89,11 @@ jobs:
         with:
           path: artifacts
 
-      - name: 打包Windows产物
-        run: |
-          cd artifacts/CursorPro-Windows
-          7z a -tzip ../../CursorPro-Windows.zip .
-
-      - name: 打包macOS产物
-        run: |
-          cd artifacts/CursorPro-macOS
-          tar -czf ../../CursorPro-macOS.tar.gz .
-
       - name: 创建发布
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            CursorPro-Windows.zip
-            CursorPro-macOS.tar.gz
+            artifacts/CursorPro-Windows-${{ github.ref_name }}.zip/CursorPro-Windows-${{ github.ref_name }}.zip
+            artifacts/CursorPro-MacOS-${{ github.ref_name }}.zip/CursorPro-MacOS-${{ github.ref_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
