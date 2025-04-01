@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+        <file>resources/icons/github.png</file>
+        <file>resources/icons/app_icon.png</file>
+    </qresource>
+</RCC>

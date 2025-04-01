@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景圆形 - 深色渐变 -->
+    <circle cx="256" cy="256" r="248" fill="url(#darkGradient)"/>
+
+    <!-- 主圆边框 - 发光效果 -->
+    <circle cx="256" cy="256" r="248" stroke="url(#greenGradient)" stroke-width="12"/>
+    <circle cx="256" cy="256" r="236" stroke="#4CD964" stroke-width="1" stroke-opacity="0.4"/>
+    <circle cx="256" cy="256" r="260" stroke="#4CD964" stroke-width="1" stroke-opacity="0.2"/>
+
+    <!-- 主光标元素 - 简约现代风格 -->
+    <path d="M176 140V320L235 260L260 340L290 330L265 250L320 250L176 140Z"
+          fill="white" stroke="#4CD964" stroke-width="6" stroke-linejoin="round"/>
+
+    <!-- 微妙的高光 -->
+    <circle cx="176" cy="140" r="5" fill="white"/>
+
+    <!-- 标准文字标签 - 清晰易读 -->
+    <text x="256" y="390" font-family="Arial, sans-serif" font-size="45" font-weight="bold" fill="#4CD964" text-anchor="middle">cursor auto</text>
+
+    <!-- 微妙的同心圆装饰 -->
+    <circle cx="256" cy="256" r="210" stroke="white" stroke-width="1" stroke-opacity="0.1"/>
+    <circle cx="256" cy="256" r="190" stroke="white" stroke-width="1" stroke-opacity="0.05"/>
+
+    <!-- 渐变定义 -->
+    <defs>
+        <linearGradient id="darkGradient" x1="256" y1="0" x2="256" y2="512" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#2D2D2D"/>
+            <stop offset="1" stop-color="#1A1A1A"/>
+        </linearGradient>
+        <linearGradient id="greenGradient" x1="100" y1="100" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#65E078"/>
+            <stop offset="1" stop-color="#4CD964"/>
+        </linearGradient>
+    </defs>
+</svg>

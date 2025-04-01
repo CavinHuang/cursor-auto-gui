@@ -2,16 +2,17 @@ from enum import Enum
 import json
 import os
 import random
-import sys
 import time
 from typing import Optional
-from src.logic.cursor_pro import go_cursor_help, patch_cursor_get_machine_id
 from src.logic.cursor_pro.cursor_auth_manager import CursorAuthManager
 from src.logic.cursor_pro.email_generator import EmailGenerator
 from src.logic.cursor_pro.get_email_code import EmailVerificationHandler
+from src.logic.cursor_pro import go_cursor_help
+from src.logic.cursor_pro import patch_cursor_get_machine_id
 from src.logic.cursor_pro.reset_machine import MachineIDResetter
 from src.logic.log import logger
-from fake_useragent import UserAgent
+from src.logic.log.log_manager import LogLevel
+from src.logic.utils.utils import get_app_screenshots_path
 from src.utils.browser_utils import BrowserManager
 
 def check_cursor_version():
@@ -19,6 +20,7 @@ def check_cursor_version():
     pkg_path, main_path = patch_cursor_get_machine_id.get_cursor_paths()
     with open(pkg_path, "r", encoding="utf-8") as f:
         version = json.load(f)["version"]
+    logger.log(f"cursor版本: {version}", LogLevel.INFO)
     return patch_cursor_get_machine_id.version_check(version, min_version="0.45.0")
 
 def get_cursor_session_token(tab, max_attempts=3, retry_interval=2):
@@ -76,15 +78,7 @@ def save_screenshot(tab, stage: str, timestamp: bool = True) -> None:
         timestamp: 是否添加时间戳
     """
     try:
-        # 创建 screenshots 目录
-        # 获取应用程序的根目录路径
-        if getattr(sys, "frozen", False):
-            # 如果是打包后的可执行文件
-            application_path = os.path.dirname(sys.executable)
-        else:
-            # 如果是开发环境
-            application_path = os.path.join(os.path.dirname(__file__), '../../..')
-        screenshot_dir = os.path.join(application_path, "screenshots")
+        screenshot_dir = get_app_screenshots_path()
         if not os.path.exists(screenshot_dir):
             os.makedirs(screenshot_dir)
 
@@ -334,8 +328,18 @@ def update_cursor_auth(email=None, access_token=None, refresh_token=None):
     return auth_manager.update_auth(email, access_token, refresh_token)
 
 def reset_machine_id(greater_than_0_45):
+    # if greater_than_0_45:
+    #     # 提示请手动执行脚本 https://github.com/chengazhen/cursor-auto-free/blob/main/patch_cursor_get_machine_id.py
+    #     if sys.platform == "darwin":
+    #         go_cursor_help_mac.go_cursor_help_mac()
+    #     elif sys.platform == "win32":
+    #         go_cursor_help_win.go_cursor_help_win()
+    #     else:
+    #         logger.error("不支持的操作系统")
+    # else:
+    #     MachineIDResetter().reset_machine_ids()
+    # MachineIDResetter().reset_machine_ids()
     if greater_than_0_45:
-        # 提示请手动执行脚本 https://github.com/chengazhen/cursor-auto-free/blob/main/patch_cursor_get_machine_id.py
         go_cursor_help.go_cursor_help()
     else:
         MachineIDResetter().reset_machine_ids()

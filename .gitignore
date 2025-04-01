@@ -55,4 +55,4 @@ Thumbs.db
 htmlcov/
 .pytest_cache/
 .mypy_cache/
-datas
+datas/settings.json
