@@ -12,6 +12,8 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    env:
+      PYTHONIOENCODING: utf-8
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -29,7 +31,9 @@ jobs:
           pip install pyinstaller
 
       - name: 运行构建脚本
+        shell: cmd
         run: |
+          chcp 65001
           python scripts/build.py
 
       - name: 上传构建产物
