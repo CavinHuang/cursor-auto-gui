@@ -26,7 +26,7 @@ system_config = {
     "app_email": "minato@minato.com",
     "app_url": "https://minato.com",
     "app_github_url": "https://github.com/CavinHuang",
-    "app_github_repo": "CavinHuang/cursor-pro",
+    "app_github_repo": "CavinHuang/cursor-auto-gui",
     "mp_wechat_name": "AI星图部落",
     "mp_wechat_qrcode": "images/mp_wechat_qrcode.png",
     "app_config_path": ".cursor_pro",
