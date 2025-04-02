@@ -417,9 +417,9 @@ def init_keep_alive():
           # logger.info(
           #     "请前往开源项目查看更多信息：https://github.com/chengazhen/cursor-auto-free"
           # )
-          logger.info("重置机器码...")
-          reset_machine_id(greater_than_0_45)
-          logger.info("所有操作已完成")
+          # logger.info("重置机器码...")
+          # reset_machine_id(greater_than_0_45)
+          # logger.info("所有操作已完成")
           print_end_message()
       else:
           logger.error("获取会话令牌失败，注册流程未完成")

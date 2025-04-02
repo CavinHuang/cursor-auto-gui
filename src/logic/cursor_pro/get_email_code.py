@@ -90,19 +90,26 @@ class EmailVerificationHandler:
             logger.info(f"连接成功${search_by_date}")
             if search_by_date:
                 date = datetime.now().strftime("%d-%b-%Y")
-                status, messages = mail.search(None, f'ON {date} UNSEEN')
+                try:
+                  rule = f'ON {date} UNSEEN'
+                  logger.info(f'rule:{rule}')
+                  status, messages = mail.search(None, rule)
+                except Exception as e:
+                  logger.error(e.__traceback__)
+                  logger.error(e)
             else:
                 status, messages = mail.search(None, 'TO', '"'+self.account+'"')
             if status != 'OK':
                 return None
 
             mail_ids = messages[0].split()
-            logger.info(f"获取到邮件数量: ${len(mail_ids)}")
+            logger.info(f"获取到邮件数量: {len(mail_ids)}")
             if not mail_ids:
                 # 没有获取到，就在获取一次
                 return self._get_mail_code_by_imap(retry=retry + 1)
 
             for mail_id in reversed(mail_ids):
+                logger.info(mail_id)
                 status, msg_data = mail.fetch(mail_id, '(RFC822)')
                 if status != 'OK':
                     continue
@@ -113,6 +120,7 @@ class EmailVerificationHandler:
                 if search_by_date and email_message['to'] !=self.account:
                     continue
                 body = self._extract_imap_body(email_message)
+                logger.info(body)
                 if body:
                     code_match = re.search(r"\b\d{6}\b", body)
                     if code_match:
