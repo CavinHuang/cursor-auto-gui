@@ -79,12 +79,12 @@ class EmailVerificationHandler:
             mail.login(self.imap['imap_user'], self.imap['imap_pass'])
             search_by_date=False
             # 针对网易系邮箱，imap登录后需要附带联系信息，且后续邮件搜索逻辑更改为获取当天的未读邮件
-            # if self.imap['imap_user'].endswith(('@163.com', '@126.com', '@yeah.net')):
-            #     imap_id = ("name", self.imap['imap_user'].split('@')[0], "contact", self.imap['imap_user'], "version", "1.0.0", "vendor", "imaplib")
-            #     mail.xatom('ID', '("' + '" "'.join(imap_id) + '")')
-            #     search_by_date=True
-            #     print(f"连接成功1${search_by_date}")
-            # mail.select(self.imap['imap_dir'])
+            if self.imap['imap_user'].endswith(('@163.com', '@126.com', '@yeah.net')):
+                imap_id = ("name", self.imap['imap_user'].split('@')[0], "contact", self.imap['imap_user'], "version", "1.0.0", "vendor", "imaplib")
+                mail.xatom('ID', '("' + '" "'.join(imap_id) + '")')
+                search_by_date=True
+                print(f"连接成功1${search_by_date}")
+            mail.select(self.imap['imap_dir'])
             # 选择收件箱
             mail.select('inbox')
             logger.info(f"连接成功${search_by_date}")
